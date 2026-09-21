@@ -1,0 +1,12 @@
+{
+  "name": "@tanko/oz-client",
+  "version": "0.11.0",
+  "license": "MIT",
+  "exports": "./mod.ts",
+  "imports": { "openapi-fetch": "npm:openapi-fetch@^0.17.0" },
+  "tasks": {
+    "check": "deno check mod.ts",
+    "ci": "deno fmt --check && deno check mod.ts",
+    "fmt": "deno fmt"
+  }
+}
