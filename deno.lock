@@ -1,0 +1,22 @@
+{
+  "version": "5",
+  "specifiers": {
+    "npm:openapi-fetch@0.17": "0.17.0"
+  },
+  "npm": {
+    "openapi-fetch@0.17.0": {
+      "integrity": "sha512-PsbZR1wAPcG91eEthKhN+Zn92FMHxv+/faECIwjXdxfTODGSGegYv0sc1Olz+HYPvKOuoXfp+0pA2XVt2cI0Ig==",
+      "dependencies": [
+        "openapi-typescript-helpers"
+      ]
+    },
+    "openapi-typescript-helpers@0.1.0": {
+      "integrity": "sha512-OKTGPthhivLw/fHz6c3OPtg72vi86qaMlqbJuVJ23qOvQ+53uw1n7HdmkJFibloF7QEjDrDkzJiOJuockM/ljw=="
+    }
+  },
+  "workspace": {
+    "dependencies": [
+      "npm:openapi-fetch@0.17"
+    ]
+  }
+}
