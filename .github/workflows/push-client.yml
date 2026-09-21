@@ -1,0 +1,47 @@
+name: Publish JSR package
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "README.md"
+      - "codegen.d.ts"
+      - "deno.json"
+      - "deno.lock"
+      - "mod.ts"
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: oz-client-publish
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+
+      - run: deno check mod.ts
+      - run: deno publish --dry-run
+
+  publish:
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+    needs: check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+
+      - run: deno publish
