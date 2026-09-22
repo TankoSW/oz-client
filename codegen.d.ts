@@ -475,7 +475,7 @@ export interface paths {
          *
          *     Returns `400` for a malformed request body, `401` for an invalid session,
          *     `403` when the operation is forbidden, `404` if a related row does not
-         *     exist, and `500` on internal errors.
+         *     exist, `422` when a required field is missing, and `500` on internal errors.
          */
         post: operations["create_patient"];
         delete?: never;
@@ -815,7 +815,7 @@ export interface paths {
          *
          *     Returns `400` if the request body is malformed, `401` if the session is
          *     invalid, `403` if the operation is forbidden, and `500` on database
-         *     errors.
+         *     errors. Missing required fields return `422`.
          */
         post: operations["create_treatment"];
         delete?: never;
@@ -1107,6 +1107,7 @@ export interface components {
             num_sessions?: number | null;
             occupation: string;
             phone: string;
+            service_id: string;
         };
         CreatePaymentRequest: {
             /** @example 1250.50 */
@@ -1161,7 +1162,7 @@ export interface components {
             /** Format: int64 */
             num_sessions: number;
             patient_id: string;
-            service_id?: string | null;
+            service_id: string;
         };
         CreateUserRequest: components["schemas"]["RoleData"] & {
             email: string;
@@ -1335,7 +1336,7 @@ export interface components {
             motive: string;
             /** Format: int64 */
             num_sessions: number;
-            service_id?: string | null;
+            service_id: string;
             status: components["schemas"]["TreatmentStatus"];
         };
         /** @enum {string} */

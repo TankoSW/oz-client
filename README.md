@@ -1,13 +1,12 @@
 # @tanko/oz-client
 
-> **Generated file:** this package is produced by cargo xtask build-client.
-> Do not edit this directory directly; changes will be overwritten the next
-> time the client is generated.
+> **Generated file:** this package is generated using [openapi-typescript](https://openapi-ts.dev/introduction), [openapi-fetch](https://openapi-ts.dev/openapi-fetch/) and by doing code generation from the OpenAPI schema of a private project called Oz.
 
-This package provides a typed client for the Oz API. The generated
-codegen.d.ts file is the source of truth for endpoint and schema types.
+This package provides a typed client for the Oz API generated from an OpenAPI schema.
 
 ## Usage
+
+The client exposes functions to create new clients, allows you the same degree of customization `openapi-fetch` allows since its a wrapper of it. It also exposes facade functions that let you discover what the API can do without looking at docs from the endpoint paths.
 
 ```ts
 import { createOzClient } from "@tanko/oz-client";
@@ -25,18 +24,14 @@ if (response.error) {
 console.log(response.data);
 ```
 
-Grouped methods preserve the request and response types generated from the
-OpenAPI schema. The underlying openapi-fetch client is also available as
-client.raw_client for direct path-based calls:
+The underlying openapi-fetch client is also available as client.raw_client for direct path-based calls:
 
 ```ts
 const response = await client.raw_client.GET("/api/v1/patient");
 ```
 
-## Request lifecycle callbacks
-
-createOzClient accepts the regular openapi-fetch client options, together
-with default onRequest, onResponse, and onError callbacks:
+As said before, the create functions accepts the regular `openapi-fetch` client options, together
+with default onRequest, onResponse, and onError callbacks which can be overridden for custom behaviour:
 
 ```ts
 const client = createOzClient({
@@ -48,11 +43,7 @@ const client = createOzClient({
     console.log(response.status);
   },
 });
-```
 
-Callbacks can be overridden for an individual grouped method call:
-
-```ts
 await client.patients.list({
   onRequest: ({ request }) => {
     request.headers.set("X-Request-Mode", "debug");
@@ -60,10 +51,7 @@ await client.patients.list({
 });
 ```
 
-## Generated types
-
-The generated paths, operations, and components types are re-exported.
-Component schemas are also available as direct aliases:
+The generated paths, operations, and components types are re-exported. Component schemas are also available as direct aliases:
 
 ```ts
 import type { Patient, components } from "@tanko/oz-client";
