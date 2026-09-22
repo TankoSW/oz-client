@@ -344,8 +344,8 @@ export interface paths {
          *
          *     Returns `400` for a malformed request body, `401` for an invalid session,
          *     `403` when the operation is forbidden, `404` if the clinic service does not
-         *     exist, `422` if the price cannot be deserialized, and `500` on database
-         *     errors.
+         *     exist, `422` if no field is provided or a field cannot be deserialized, and
+         *     `500` on database errors.
          */
         patch: operations["update_clinic_service"];
         trace?: never;
@@ -1381,6 +1381,8 @@ export interface components {
             reason: string;
         };
         UpdateServiceRequest: {
+            description?: string | null;
+            name?: string | null;
             /** Format: decimal */
             price: string;
         };
@@ -2473,7 +2475,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Surcharge could not be parsed */
+            /** @description No update field was provided or a field could not be parsed */
             422: {
                 headers: {
                     "x-request-id"?: string;
