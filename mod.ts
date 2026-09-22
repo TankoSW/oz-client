@@ -216,6 +216,8 @@ export interface OzClient {
     logout: (body?: OzRequestOptions<operations["logout"]>) => ReturnType<ClientForPath<paths["/api/v1/auth/logout"], "application/json">["POST"]>;
     /** Calls GET /api/v1/auth/me. Per-call lifecycle callbacks override the client defaults. */
     me: (body?: OzRequestOptions<operations["me"]>) => ReturnType<ClientForPath<paths["/api/v1/auth/me"], "application/json">["GET"]>;
+    /** Calls GET /api/v1/auth/settings. Per-call lifecycle callbacks override the client defaults. */
+    getUserSettings: (body?: OzRequestOptions<operations["get_user_settings"]>) => ReturnType<ClientForPath<paths["/api/v1/auth/settings"], "application/json">["GET"]>;
     /** Calls PATCH /api/v1/auth/settings. Per-call lifecycle callbacks override the client defaults. */
     updateUserSettings: (body: OzRequestOptions<operations["update_user_settings"]>) => ReturnType<ClientForPath<paths["/api/v1/auth/settings"], "application/json">["PATCH"]>;
   };
@@ -369,6 +371,8 @@ export function createOzClient(options: OzClientOptions): OzClient {
       logout: (body?: OzRequestOptions<operations["logout"]>) => raw_client.POST("/api/v1/auth/logout", withCallbacks(body, defaults)),
       /** Calls GET /api/v1/auth/me. Per-call lifecycle callbacks override the client defaults. */
       me: (body?: OzRequestOptions<operations["me"]>) => raw_client.GET("/api/v1/auth/me", withCallbacks(body, defaults)),
+      /** Calls GET /api/v1/auth/settings. Per-call lifecycle callbacks override the client defaults. */
+      getUserSettings: (body?: OzRequestOptions<operations["get_user_settings"]>) => raw_client.GET("/api/v1/auth/settings", withCallbacks(body, defaults)),
       /** Calls PATCH /api/v1/auth/settings. Per-call lifecycle callbacks override the client defaults. */
       updateUserSettings: (body: OzRequestOptions<operations["update_user_settings"]>) => raw_client.PATCH("/api/v1/auth/settings", withCallbacks(body, defaults)),
       },

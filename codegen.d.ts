@@ -223,7 +223,14 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get?: never;
+        /**
+         * Gets the settings of the currently logged-in user.
+         * @description # Errors
+         *
+         *     Returns `401` if the session is invalid, `404` if the user's settings do
+         *     not exist, and `500` on database errors.
+         */
+        get: operations["get_user_settings"];
         put?: never;
         post?: never;
         delete?: never;
@@ -1154,6 +1161,7 @@ export interface components {
             /** Format: int64 */
             num_sessions: number;
             patient_id: string;
+            service_id?: string | null;
         };
         CreateUserRequest: components["schemas"]["RoleData"] & {
             email: string;
@@ -1327,6 +1335,7 @@ export interface components {
             motive: string;
             /** Format: int64 */
             num_sessions: number;
+            service_id?: string | null;
             status: components["schemas"]["TreatmentStatus"];
         };
         /** @enum {string} */
@@ -1921,6 +1930,47 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["User"];
+                };
+            };
+            /** @description Session expired or invalid */
+            401: {
+                headers: {
+                    "x-request-id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal error */
+            500: {
+                headers: {
+                    "x-request-id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    get_user_settings: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Current user settings */
+            200: {
+                headers: {
+                    "x-request-id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UserSettings"];
                 };
             };
             /** @description Session expired or invalid */
