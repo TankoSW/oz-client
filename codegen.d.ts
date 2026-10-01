@@ -350,6 +350,29 @@ export interface paths {
         patch: operations["update_clinic_service"];
         trace?: never;
     };
+    "/api/v1/media": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Uploads and attaches an image to a patient in the current user's clinic.
+         * @description # Errors
+         *
+         *     Returns an error when the multipart request is malformed, the image is
+         *     invalid, storage fails, or the patient is not in the current user's clinic.
+         */
+        post: operations["upload_image"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/note/{note_id}": {
         parameters: {
             query?: never;
@@ -1183,7 +1206,7 @@ export interface components {
             reason: string;
         };
         /** @enum {string} */
-        ErrorCode: "DuplicateUser" | "DuplicateRequest" | "InvalidId" | "ExpiredSession" | "MissingRow" | "InvalidCredentials" | "ValidationFailed" | "ClinicAlreadyExists" | "InvalidJson" | "TimeSlotConflict" | "ServiceUnavailable" | "DatabaseError" | "InternalError" | "Opaque";
+        ErrorCode: "DuplicateUser" | "DuplicateRequest" | "InvalidId" | "ExpiredSession" | "MissingRow" | "InvalidCredentials" | "ValidationFailed" | "PayloadTooLarge" | "ClinicAlreadyExists" | "InvalidJson" | "TimeSlotConflict" | "ServiceUnavailable" | "DatabaseError" | "InternalError" | "Opaque";
         ErrorResponse: {
             code: components["schemas"]["ErrorCode"];
             hint?: string | null;
@@ -1191,6 +1214,25 @@ export interface components {
         };
         ForgotPasswordRequest: {
             email: string;
+        };
+        ImageResponse: {
+            /**
+             * @description Generated filename of the canonical WebP image.
+             * @example V1StGXR8_Z.webp
+             */
+            filename: string;
+            /**
+             * @description Public URL of the uploaded image.
+             * @example https://images.example.com/images/V1StGXR8_Z.webp
+             */
+            url: string;
+        };
+        ImageUploadRequest: {
+            /**
+             * Format: binary
+             * @description Image file to upload. JPEG, PNG, and WebP are accepted.
+             */
+            file: string;
         };
         LoginResponse: {
             auth_token: components["schemas"]["AuthToken"];
@@ -1475,7 +1517,7 @@ export interface operations {
                     "application/json": components["schemas"]["Appointment"][];
                 };
             };
-            /** @description Internal error */
+            /** @description Error interno */
             500: {
                 headers: {
                     "x-request-id"?: string;
@@ -1514,7 +1556,7 @@ export interface operations {
                     "application/json": components["schemas"]["Appointment"][];
                 };
             };
-            /** @description The given ID is invalid */
+            /** @description El ID proporcionado no es válido */
             400: {
                 headers: {
                     "x-request-id"?: string;
@@ -1524,7 +1566,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Session expired or invalid */
+            /** @description La sesión ha expirado o no es válida */
             401: {
                 headers: {
                     "x-request-id"?: string;
@@ -1534,7 +1576,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Not allowed to perform this action */
+            /** @description No tiene permiso para realizar esta acción */
             403: {
                 headers: {
                     "x-request-id"?: string;
@@ -1544,7 +1586,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Internal error */
+            /** @description Error interno */
             500: {
                 headers: {
                     "x-request-id"?: string;
@@ -1578,7 +1620,7 @@ export interface operations {
                     "application/json": components["schemas"]["Appointment"][];
                 };
             };
-            /** @description The given ID is invalid */
+            /** @description El ID proporcionado no es válido */
             400: {
                 headers: {
                     "x-request-id"?: string;
@@ -1588,7 +1630,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Session expired or invalid */
+            /** @description La sesión ha expirado o no es válida */
             401: {
                 headers: {
                     "x-request-id"?: string;
@@ -1598,7 +1640,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Not allowed to perform this action */
+            /** @description No tiene permiso para realizar esta acción */
             403: {
                 headers: {
                     "x-request-id"?: string;
@@ -1608,7 +1650,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Internal error */
+            /** @description Error interno */
             500: {
                 headers: {
                     "x-request-id"?: string;
@@ -1644,7 +1686,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description Malformed request body or invalid ID */
+            /** @description El cuerpo de la solicitud tiene un formato incorrecto o el ID no es válido */
             400: {
                 headers: {
                     "x-request-id"?: string;
@@ -1654,7 +1696,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Session expired or invalid */
+            /** @description La sesión ha expirado o no es válida */
             401: {
                 headers: {
                     "x-request-id"?: string;
@@ -1664,7 +1706,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Not allowed to perform this action */
+            /** @description No tiene permiso para realizar esta acción */
             403: {
                 headers: {
                     "x-request-id"?: string;
@@ -1674,7 +1716,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Appointment or staff member not found */
+            /** @description No se encontró el turno o el miembro del staff */
             404: {
                 headers: {
                     "x-request-id"?: string;
@@ -1684,7 +1726,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Time slot conflict */
+            /** @description Conflicto de horario */
             409: {
                 headers: {
                     "x-request-id"?: string;
@@ -1694,7 +1736,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Internal error */
+            /** @description Error interno */
             500: {
                 headers: {
                     "x-request-id"?: string;
@@ -1727,7 +1769,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description Malformed request body */
+            /** @description El cuerpo de la solicitud tiene un formato incorrecto */
             400: {
                 headers: {
                     "x-request-id"?: string;
@@ -1737,7 +1779,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Invalid credentials */
+            /** @description Las credenciales no son válidas */
             401: {
                 headers: {
                     "x-request-id"?: string;
@@ -1747,7 +1789,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Internal error */
+            /** @description Error interno */
             500: {
                 headers: {
                     "x-request-id"?: string;
@@ -1780,7 +1822,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description Malformed request body */
+            /** @description El cuerpo de la solicitud tiene un formato incorrecto */
             400: {
                 headers: {
                     "x-request-id"?: string;
@@ -1790,7 +1832,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Session expired or invalid */
+            /** @description La sesión ha expirado o no es válida */
             401: {
                 headers: {
                     "x-request-id"?: string;
@@ -1800,7 +1842,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Not allowed to perform this action */
+            /** @description No tiene permiso para realizar esta acción */
             403: {
                 headers: {
                     "x-request-id"?: string;
@@ -1810,7 +1852,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Internal error */
+            /** @description Error interno */
             500: {
                 headers: {
                     "x-request-id"?: string;
@@ -1845,7 +1887,7 @@ export interface operations {
                     "application/json": components["schemas"]["LoginResponse"];
                 };
             };
-            /** @description Malformed request body */
+            /** @description El cuerpo de la solicitud tiene un formato incorrecto */
             400: {
                 headers: {
                     "x-request-id"?: string;
@@ -1855,7 +1897,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Invalid credentials */
+            /** @description Las credenciales no son válidas */
             401: {
                 headers: {
                     "x-request-id"?: string;
@@ -1865,7 +1907,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Internal error */
+            /** @description Error interno */
             500: {
                 headers: {
                     "x-request-id"?: string;
@@ -1894,7 +1936,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description Session expired or invalid */
+            /** @description La sesión ha expirado o no es válida */
             401: {
                 headers: {
                     "x-request-id"?: string;
@@ -1904,7 +1946,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Internal error */
+            /** @description Error interno */
             500: {
                 headers: {
                     "x-request-id"?: string;
@@ -1935,7 +1977,7 @@ export interface operations {
                     "application/json": components["schemas"]["User"];
                 };
             };
-            /** @description Session expired or invalid */
+            /** @description La sesión ha expirado o no es válida */
             401: {
                 headers: {
                     "x-request-id"?: string;
@@ -1945,7 +1987,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Internal error */
+            /** @description Error interno */
             500: {
                 headers: {
                     "x-request-id"?: string;
@@ -1976,7 +2018,7 @@ export interface operations {
                     "application/json": components["schemas"]["UserSettings"];
                 };
             };
-            /** @description Session expired or invalid */
+            /** @description La sesión ha expirado o no es válida */
             401: {
                 headers: {
                     "x-request-id"?: string;
@@ -1986,7 +2028,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Internal error */
+            /** @description Error interno */
             500: {
                 headers: {
                     "x-request-id"?: string;
@@ -2021,7 +2063,7 @@ export interface operations {
                     "application/json": components["schemas"]["UserSettings"];
                 };
             };
-            /** @description Malformed request body or invalid ID */
+            /** @description El cuerpo de la solicitud tiene un formato incorrecto o el ID no es válido */
             400: {
                 headers: {
                     "x-request-id"?: string;
@@ -2031,7 +2073,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Session expired or invalid */
+            /** @description La sesión ha expirado o no es válida */
             401: {
                 headers: {
                     "x-request-id"?: string;
@@ -2041,7 +2083,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Not allowed to perform this action */
+            /** @description No tiene permiso para realizar esta acción */
             403: {
                 headers: {
                     "x-request-id"?: string;
@@ -2051,7 +2093,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Internal error */
+            /** @description Error interno */
             500: {
                 headers: {
                     "x-request-id"?: string;
@@ -2105,7 +2147,7 @@ export interface operations {
                     "application/json": components["schemas"]["CreateClinicResponse"];
                 };
             };
-            /** @description Malformed request body */
+            /** @description El cuerpo de la solicitud tiene un formato incorrecto */
             400: {
                 headers: {
                     "x-request-id"?: string;
@@ -2115,7 +2157,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Session expired or invalid */
+            /** @description La sesión ha expirado o no es válida */
             401: {
                 headers: {
                     "x-request-id"?: string;
@@ -2125,7 +2167,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Not allowed to perform this action */
+            /** @description No tiene permiso para realizar esta acción */
             403: {
                 headers: {
                     "x-request-id"?: string;
@@ -2135,7 +2177,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Clinic already exists */
+            /** @description La clínica ya existe */
             409: {
                 headers: {
                     "x-request-id"?: string;
@@ -2145,7 +2187,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Internal error */
+            /** @description Error interno */
             500: {
                 headers: {
                     "x-request-id"?: string;
@@ -2176,7 +2218,7 @@ export interface operations {
                     "application/json": components["schemas"]["ServiceResponse"][];
                 };
             };
-            /** @description Session expired or invalid */
+            /** @description La sesión ha expirado o no es válida */
             401: {
                 headers: {
                     "x-request-id"?: string;
@@ -2186,7 +2228,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Not allowed to perform this action */
+            /** @description No tiene permiso para realizar esta acción */
             403: {
                 headers: {
                     "x-request-id"?: string;
@@ -2196,7 +2238,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Internal error */
+            /** @description Error interno */
             500: {
                 headers: {
                     "x-request-id"?: string;
@@ -2231,7 +2273,7 @@ export interface operations {
                     "application/json": components["schemas"]["ServiceResponse"];
                 };
             };
-            /** @description Malformed request body */
+            /** @description El cuerpo de la solicitud tiene un formato incorrecto */
             400: {
                 headers: {
                     "x-request-id"?: string;
@@ -2241,7 +2283,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Session expired or invalid */
+            /** @description La sesión ha expirado o no es válida */
             401: {
                 headers: {
                     "x-request-id"?: string;
@@ -2251,7 +2293,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Not allowed to perform this action */
+            /** @description No tiene permiso para realizar esta acción */
             403: {
                 headers: {
                     "x-request-id"?: string;
@@ -2261,7 +2303,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Surcharge could not be parsed */
+            /** @description No fue posible interpretar el recargo */
             422: {
                 headers: {
                     "x-request-id"?: string;
@@ -2271,7 +2313,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Internal error */
+            /** @description Error interno */
             500: {
                 headers: {
                     "x-request-id"?: string;
@@ -2305,7 +2347,7 @@ export interface operations {
                     "application/json": components["schemas"]["ServiceResponse"];
                 };
             };
-            /** @description Session expired or invalid */
+            /** @description La sesión ha expirado o no es válida */
             401: {
                 headers: {
                     "x-request-id"?: string;
@@ -2315,7 +2357,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Not allowed to perform this action */
+            /** @description No tiene permiso para realizar esta acción */
             403: {
                 headers: {
                     "x-request-id"?: string;
@@ -2325,7 +2367,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description clinic service not found */
+            /** @description No se encontró el servicio de la clínica */
             404: {
                 headers: {
                     "x-request-id"?: string;
@@ -2335,7 +2377,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Internal error */
+            /** @description Error interno */
             500: {
                 headers: {
                     "x-request-id"?: string;
@@ -2367,7 +2409,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description Session expired or invalid */
+            /** @description La sesión ha expirado o no es válida */
             401: {
                 headers: {
                     "x-request-id"?: string;
@@ -2377,7 +2419,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Not allowed to perform this action */
+            /** @description No tiene permiso para realizar esta acción */
             403: {
                 headers: {
                     "x-request-id"?: string;
@@ -2387,7 +2429,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description clinic service not found */
+            /** @description No se encontró el servicio de la clínica */
             404: {
                 headers: {
                     "x-request-id"?: string;
@@ -2397,7 +2439,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Internal error */
+            /** @description Error interno */
             500: {
                 headers: {
                     "x-request-id"?: string;
@@ -2435,7 +2477,7 @@ export interface operations {
                     "application/json": components["schemas"]["ServiceResponse"];
                 };
             };
-            /** @description Malformed request body */
+            /** @description El cuerpo de la solicitud tiene un formato incorrecto */
             400: {
                 headers: {
                     "x-request-id"?: string;
@@ -2445,7 +2487,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Session expired or invalid */
+            /** @description La sesión ha expirado o no es válida */
             401: {
                 headers: {
                     "x-request-id"?: string;
@@ -2455,7 +2497,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Not allowed to perform this action */
+            /** @description No tiene permiso para realizar esta acción */
             403: {
                 headers: {
                     "x-request-id"?: string;
@@ -2465,7 +2507,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description clinic service not found */
+            /** @description No se encontró el servicio de la clínica */
             404: {
                 headers: {
                     "x-request-id"?: string;
@@ -2475,7 +2517,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description No update field was provided or a field could not be parsed */
+            /** @description No se proporcionó ningún campo para actualizar o alguno no pudo ser interpretado */
             422: {
                 headers: {
                     "x-request-id"?: string;
@@ -2485,10 +2527,82 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Internal error */
+            /** @description Error interno */
             500: {
                 headers: {
                     "x-request-id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    upload_image: {
+        parameters: {
+            query: {
+                /** @description Public ID of the patient this image is related to. */
+                patient_id: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "multipart/form-data": components["schemas"]["ImageUploadRequest"];
+            };
+        };
+        responses: {
+            /** @description Image uploaded and attached to the patient */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ImageResponse"];
+                };
+            };
+            /** @description Falta el archivo o el patient_id, o alguno no es válido */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description No se encontró el paciente en la clínica del usuario autenticado */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description El archivo supera el límite de tamaño configurado */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Falló el procesamiento de la imagen, el almacenamiento o la operación de base de datos */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description El almacenamiento de archivos no está disponible */
+            503: {
+                headers: {
                     [name: string]: unknown;
                 };
                 content: {
@@ -2519,7 +2633,7 @@ export interface operations {
                     "application/json": components["schemas"]["NoteResponse"];
                 };
             };
-            /** @description The given ID is invalid */
+            /** @description El ID proporcionado no es válido */
             400: {
                 headers: {
                     "x-request-id"?: string;
@@ -2529,7 +2643,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Session expired or invalid */
+            /** @description La sesión ha expirado o no es válida */
             401: {
                 headers: {
                     "x-request-id"?: string;
@@ -2539,7 +2653,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Not allowed to perform this action */
+            /** @description No tiene permiso para realizar esta acción */
             403: {
                 headers: {
                     "x-request-id"?: string;
@@ -2549,7 +2663,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Note not found */
+            /** @description No se encontró la nota */
             404: {
                 headers: {
                     "x-request-id"?: string;
@@ -2559,7 +2673,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Internal error */
+            /** @description Error interno */
             500: {
                 headers: {
                     "x-request-id"?: string;
@@ -2591,7 +2705,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description The given ID is invalid */
+            /** @description El ID proporcionado no es válido */
             400: {
                 headers: {
                     "x-request-id"?: string;
@@ -2601,7 +2715,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Session expired or invalid */
+            /** @description La sesión ha expirado o no es válida */
             401: {
                 headers: {
                     "x-request-id"?: string;
@@ -2611,7 +2725,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Not allowed to perform this action */
+            /** @description No tiene permiso para realizar esta acción */
             403: {
                 headers: {
                     "x-request-id"?: string;
@@ -2621,7 +2735,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Internal error */
+            /** @description Error interno */
             500: {
                 headers: {
                     "x-request-id"?: string;
@@ -2659,7 +2773,7 @@ export interface operations {
                     "application/json": components["schemas"]["NoteResponse"];
                 };
             };
-            /** @description Malformed request body or invalid ID */
+            /** @description El cuerpo de la solicitud tiene un formato incorrecto o el ID no es válido */
             400: {
                 headers: {
                     "x-request-id"?: string;
@@ -2669,7 +2783,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Session expired or invalid */
+            /** @description La sesión ha expirado o no es válida */
             401: {
                 headers: {
                     "x-request-id"?: string;
@@ -2679,7 +2793,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Not allowed to perform this action */
+            /** @description No tiene permiso para realizar esta acción */
             403: {
                 headers: {
                     "x-request-id"?: string;
@@ -2689,7 +2803,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Note not found */
+            /** @description No se encontró la nota */
             404: {
                 headers: {
                     "x-request-id"?: string;
@@ -2699,7 +2813,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Internal error */
+            /** @description Error interno */
             500: {
                 headers: {
                     "x-request-id"?: string;
@@ -2730,7 +2844,7 @@ export interface operations {
                     "application/json": components["schemas"]["ObraSocialResponse"][];
                 };
             };
-            /** @description Session expired or invalid */
+            /** @description La sesión ha expirado o no es válida */
             401: {
                 headers: {
                     "x-request-id"?: string;
@@ -2740,7 +2854,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Not allowed to perform this action */
+            /** @description No tiene permiso para realizar esta acción */
             403: {
                 headers: {
                     "x-request-id"?: string;
@@ -2750,7 +2864,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Internal error */
+            /** @description Error interno */
             500: {
                 headers: {
                     "x-request-id"?: string;
@@ -2785,7 +2899,7 @@ export interface operations {
                     "application/json": components["schemas"]["ObraSocialResponse"];
                 };
             };
-            /** @description Malformed request body */
+            /** @description El cuerpo de la solicitud tiene un formato incorrecto */
             400: {
                 headers: {
                     "x-request-id"?: string;
@@ -2795,7 +2909,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Session expired or invalid */
+            /** @description La sesión ha expirado o no es válida */
             401: {
                 headers: {
                     "x-request-id"?: string;
@@ -2805,7 +2919,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Not allowed to perform this action */
+            /** @description No tiene permiso para realizar esta acción */
             403: {
                 headers: {
                     "x-request-id"?: string;
@@ -2815,7 +2929,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Surcharge could not be parsed */
+            /** @description No fue posible interpretar el recargo */
             422: {
                 headers: {
                     "x-request-id"?: string;
@@ -2825,7 +2939,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Internal error */
+            /** @description Error interno */
             500: {
                 headers: {
                     "x-request-id"?: string;
@@ -2859,7 +2973,7 @@ export interface operations {
                     "application/json": components["schemas"]["ObraSocialResponse"];
                 };
             };
-            /** @description Session expired or invalid */
+            /** @description La sesión ha expirado o no es válida */
             401: {
                 headers: {
                     "x-request-id"?: string;
@@ -2869,7 +2983,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Not allowed to perform this action */
+            /** @description No tiene permiso para realizar esta acción */
             403: {
                 headers: {
                     "x-request-id"?: string;
@@ -2879,7 +2993,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Obra social not found */
+            /** @description No se encontró la obra social */
             404: {
                 headers: {
                     "x-request-id"?: string;
@@ -2889,7 +3003,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Internal error */
+            /** @description Error interno */
             500: {
                 headers: {
                     "x-request-id"?: string;
@@ -2927,7 +3041,7 @@ export interface operations {
                     "application/json": components["schemas"]["ObraSocialResponse"];
                 };
             };
-            /** @description Malformed request body */
+            /** @description El cuerpo de la solicitud tiene un formato incorrecto */
             400: {
                 headers: {
                     "x-request-id"?: string;
@@ -2937,7 +3051,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Session expired or invalid */
+            /** @description La sesión ha expirado o no es válida */
             401: {
                 headers: {
                     "x-request-id"?: string;
@@ -2947,7 +3061,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Not allowed to perform this action */
+            /** @description No tiene permiso para realizar esta acción */
             403: {
                 headers: {
                     "x-request-id"?: string;
@@ -2957,7 +3071,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Obra social not found */
+            /** @description No se encontró la obra social */
             404: {
                 headers: {
                     "x-request-id"?: string;
@@ -2967,7 +3081,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Surcharge could not be parsed */
+            /** @description No fue posible interpretar el recargo */
             422: {
                 headers: {
                     "x-request-id"?: string;
@@ -2977,7 +3091,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Internal error */
+            /** @description Error interno */
             500: {
                 headers: {
                     "x-request-id"?: string;
@@ -3008,7 +3122,7 @@ export interface operations {
                     "application/json": components["schemas"]["PatientResponse"][];
                 };
             };
-            /** @description Session expired or invalid */
+            /** @description La sesión ha expirado o no es válida */
             401: {
                 headers: {
                     "x-request-id"?: string;
@@ -3018,7 +3132,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Not allowed to perform this action */
+            /** @description No tiene permiso para realizar esta acción */
             403: {
                 headers: {
                     "x-request-id"?: string;
@@ -3028,7 +3142,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Internal error */
+            /** @description Error interno */
             500: {
                 headers: {
                     "x-request-id"?: string;
@@ -3063,7 +3177,7 @@ export interface operations {
                     "application/json": components["schemas"]["PatientResponse"];
                 };
             };
-            /** @description Malformed request body */
+            /** @description El cuerpo de la solicitud tiene un formato incorrecto */
             400: {
                 headers: {
                     "x-request-id"?: string;
@@ -3073,7 +3187,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Session expired or invalid */
+            /** @description La sesión ha expirado o no es válida */
             401: {
                 headers: {
                     "x-request-id"?: string;
@@ -3083,7 +3197,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Not allowed to perform this action */
+            /** @description No tiene permiso para realizar esta acción */
             403: {
                 headers: {
                     "x-request-id"?: string;
@@ -3093,7 +3207,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Related row not found */
+            /** @description No se encontró el registro relacionado */
             404: {
                 headers: {
                     "x-request-id"?: string;
@@ -3103,7 +3217,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Internal error */
+            /** @description Error interno */
             500: {
                 headers: {
                     "x-request-id"?: string;
@@ -3137,7 +3251,7 @@ export interface operations {
                     "application/json": components["schemas"]["PatientResponse"];
                 };
             };
-            /** @description The given ID is invalid */
+            /** @description El ID proporcionado no es válido */
             400: {
                 headers: {
                     "x-request-id"?: string;
@@ -3147,7 +3261,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Session expired or invalid */
+            /** @description La sesión ha expirado o no es válida */
             401: {
                 headers: {
                     "x-request-id"?: string;
@@ -3157,7 +3271,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Not allowed to perform this action */
+            /** @description No tiene permiso para realizar esta acción */
             403: {
                 headers: {
                     "x-request-id"?: string;
@@ -3167,7 +3281,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Patient not found */
+            /** @description No se encontró el paciente */
             404: {
                 headers: {
                     "x-request-id"?: string;
@@ -3177,7 +3291,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Internal error */
+            /** @description Error interno */
             500: {
                 headers: {
                     "x-request-id"?: string;
@@ -3215,7 +3329,7 @@ export interface operations {
                     "application/json": components["schemas"]["PatientResponse"];
                 };
             };
-            /** @description Malformed request body or invalid ID */
+            /** @description El cuerpo de la solicitud tiene un formato incorrecto o el ID no es válido */
             400: {
                 headers: {
                     "x-request-id"?: string;
@@ -3225,7 +3339,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Session expired or invalid */
+            /** @description La sesión ha expirado o no es válida */
             401: {
                 headers: {
                     "x-request-id"?: string;
@@ -3235,7 +3349,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Not allowed to perform this action */
+            /** @description No tiene permiso para realizar esta acción */
             403: {
                 headers: {
                     "x-request-id"?: string;
@@ -3245,7 +3359,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Patient not found */
+            /** @description No se encontró el paciente */
             404: {
                 headers: {
                     "x-request-id"?: string;
@@ -3255,7 +3369,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Nothing to update was provided */
+            /** @description No se proporcionó ningún dato para actualizar */
             422: {
                 headers: {
                     "x-request-id"?: string;
@@ -3265,7 +3379,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Internal error */
+            /** @description Error interno */
             500: {
                 headers: {
                     "x-request-id"?: string;
@@ -3299,7 +3413,7 @@ export interface operations {
                     "application/json": components["schemas"]["ClinicHistoryResponse"];
                 };
             };
-            /** @description The given ID is invalid */
+            /** @description El ID proporcionado no es válido */
             400: {
                 headers: {
                     "x-request-id"?: string;
@@ -3309,7 +3423,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Session expired or invalid */
+            /** @description La sesión ha expirado o no es válida */
             401: {
                 headers: {
                     "x-request-id"?: string;
@@ -3319,7 +3433,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Not allowed to perform this action */
+            /** @description No tiene permiso para realizar esta acción */
             403: {
                 headers: {
                     "x-request-id"?: string;
@@ -3329,7 +3443,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Patient not found */
+            /** @description No se encontró el paciente */
             404: {
                 headers: {
                     "x-request-id"?: string;
@@ -3339,7 +3453,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Internal error */
+            /** @description Error interno */
             500: {
                 headers: {
                     "x-request-id"?: string;
@@ -3371,7 +3485,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description The given ID is invalid */
+            /** @description El ID proporcionado no es válido */
             400: {
                 headers: {
                     "x-request-id"?: string;
@@ -3381,7 +3495,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Session expired or invalid */
+            /** @description La sesión ha expirado o no es válida */
             401: {
                 headers: {
                     "x-request-id"?: string;
@@ -3391,7 +3505,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Not allowed to perform this action */
+            /** @description No tiene permiso para realizar esta acción */
             403: {
                 headers: {
                     "x-request-id"?: string;
@@ -3401,7 +3515,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Patient not found */
+            /** @description No se encontró el paciente */
             404: {
                 headers: {
                     "x-request-id"?: string;
@@ -3411,7 +3525,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Internal error */
+            /** @description Error interno */
             500: {
                 headers: {
                     "x-request-id"?: string;
@@ -3442,7 +3556,7 @@ export interface operations {
                     "application/json": components["schemas"]["PaymentResponse"][];
                 };
             };
-            /** @description Session expired or invalid */
+            /** @description La sesión ha expirado o no es válida */
             401: {
                 headers: {
                     "x-request-id"?: string;
@@ -3452,7 +3566,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Not allowed to perform this action */
+            /** @description No tiene permiso para realizar esta acción */
             403: {
                 headers: {
                     "x-request-id"?: string;
@@ -3462,7 +3576,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Internal error */
+            /** @description Error interno */
             500: {
                 headers: {
                     "x-request-id"?: string;
@@ -3497,7 +3611,7 @@ export interface operations {
                     "application/json": components["schemas"]["PaymentResponse"];
                 };
             };
-            /** @description Malformed request body */
+            /** @description El cuerpo de la solicitud tiene un formato incorrecto */
             400: {
                 headers: {
                     "x-request-id"?: string;
@@ -3507,7 +3621,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Session expired or invalid */
+            /** @description La sesión ha expirado o no es válida */
             401: {
                 headers: {
                     "x-request-id"?: string;
@@ -3517,7 +3631,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Not allowed to perform this action */
+            /** @description No tiene permiso para realizar esta acción */
             403: {
                 headers: {
                     "x-request-id"?: string;
@@ -3527,7 +3641,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Related row not found (clinic or creator) */
+            /** @description No se encontró el registro relacionado (clínica o creador) */
             404: {
                 headers: {
                     "x-request-id"?: string;
@@ -3537,7 +3651,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Duplicate request */
+            /** @description Solicitud duplicada */
             409: {
                 headers: {
                     "x-request-id"?: string;
@@ -3547,7 +3661,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Payment data could not be parsed */
+            /** @description No fue posible interpretar los datos del pago */
             422: {
                 headers: {
                     "x-request-id"?: string;
@@ -3557,7 +3671,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Internal error */
+            /** @description Error interno */
             500: {
                 headers: {
                     "x-request-id"?: string;
@@ -3591,7 +3705,7 @@ export interface operations {
                     "application/json": components["schemas"]["PaymentResponse"][];
                 };
             };
-            /** @description The given ID is invalid */
+            /** @description El ID proporcionado no es válido */
             400: {
                 headers: {
                     "x-request-id"?: string;
@@ -3601,7 +3715,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Session expired or invalid */
+            /** @description La sesión ha expirado o no es válida */
             401: {
                 headers: {
                     "x-request-id"?: string;
@@ -3611,7 +3725,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Not allowed to perform this action */
+            /** @description No tiene permiso para realizar esta acción */
             403: {
                 headers: {
                     "x-request-id"?: string;
@@ -3621,7 +3735,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Internal error */
+            /** @description Error interno */
             500: {
                 headers: {
                     "x-request-id"?: string;
@@ -3655,7 +3769,7 @@ export interface operations {
                     "application/json": components["schemas"]["PaymentResponse"];
                 };
             };
-            /** @description The given ID is invalid */
+            /** @description El ID proporcionado no es válido */
             400: {
                 headers: {
                     "x-request-id"?: string;
@@ -3665,7 +3779,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Session expired or invalid */
+            /** @description La sesión ha expirado o no es válida */
             401: {
                 headers: {
                     "x-request-id"?: string;
@@ -3675,7 +3789,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Not allowed to perform this action */
+            /** @description No tiene permiso para realizar esta acción */
             403: {
                 headers: {
                     "x-request-id"?: string;
@@ -3685,7 +3799,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Payment not found */
+            /** @description No se encontró el pago */
             404: {
                 headers: {
                     "x-request-id"?: string;
@@ -3695,7 +3809,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Internal error */
+            /** @description Error interno */
             500: {
                 headers: {
                     "x-request-id"?: string;
@@ -3731,7 +3845,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description Malformed request body or invalid ID */
+            /** @description El cuerpo de la solicitud tiene un formato incorrecto o el ID no es válido */
             400: {
                 headers: {
                     "x-request-id"?: string;
@@ -3741,7 +3855,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Session expired or invalid */
+            /** @description La sesión ha expirado o no es válida */
             401: {
                 headers: {
                     "x-request-id"?: string;
@@ -3751,7 +3865,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Not allowed to perform this action */
+            /** @description No tiene permiso para realizar esta acción */
             403: {
                 headers: {
                     "x-request-id"?: string;
@@ -3761,7 +3875,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Payment not found */
+            /** @description No se encontró el pago */
             404: {
                 headers: {
                     "x-request-id"?: string;
@@ -3771,7 +3885,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Internal error */
+            /** @description Error interno */
             500: {
                 headers: {
                     "x-request-id"?: string;
@@ -3809,7 +3923,7 @@ export interface operations {
                     "application/json": components["schemas"]["PaymentResponse"];
                 };
             };
-            /** @description Malformed request body or invalid ID */
+            /** @description El cuerpo de la solicitud tiene un formato incorrecto o el ID no es válido */
             400: {
                 headers: {
                     "x-request-id"?: string;
@@ -3819,7 +3933,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Session expired or invalid */
+            /** @description La sesión ha expirado o no es válida */
             401: {
                 headers: {
                     "x-request-id"?: string;
@@ -3829,7 +3943,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Not allowed to perform this action */
+            /** @description No tiene permiso para realizar esta acción */
             403: {
                 headers: {
                     "x-request-id"?: string;
@@ -3839,7 +3953,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Payment not found */
+            /** @description No se encontró el pago */
             404: {
                 headers: {
                     "x-request-id"?: string;
@@ -3849,7 +3963,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Duplicate request */
+            /** @description Solicitud duplicada */
             409: {
                 headers: {
                     "x-request-id"?: string;
@@ -3859,7 +3973,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Payment data could not be parsed */
+            /** @description No fue posible interpretar los datos del pago */
             422: {
                 headers: {
                     "x-request-id"?: string;
@@ -3869,7 +3983,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Internal error */
+            /** @description Error interno */
             500: {
                 headers: {
                     "x-request-id"?: string;
@@ -3904,7 +4018,7 @@ export interface operations {
                     "application/json": components["schemas"]["SessionResponse"];
                 };
             };
-            /** @description Malformed request body */
+            /** @description El cuerpo de la solicitud tiene un formato incorrecto */
             400: {
                 headers: {
                     "x-request-id"?: string;
@@ -3914,7 +4028,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Session expired or invalid */
+            /** @description La sesión ha expirado o no es válida */
             401: {
                 headers: {
                     "x-request-id"?: string;
@@ -3924,7 +4038,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Not allowed to perform this action */
+            /** @description No tiene permiso para realizar esta acción */
             403: {
                 headers: {
                     "x-request-id"?: string;
@@ -3934,7 +4048,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Related row not found */
+            /** @description No se encontró el registro relacionado */
             404: {
                 headers: {
                     "x-request-id"?: string;
@@ -3944,7 +4058,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Internal error */
+            /** @description Error interno */
             500: {
                 headers: {
                     "x-request-id"?: string;
@@ -3978,7 +4092,7 @@ export interface operations {
                     "application/json": components["schemas"]["SessionResponse"];
                 };
             };
-            /** @description The given ID is invalid */
+            /** @description El ID proporcionado no es válido */
             400: {
                 headers: {
                     "x-request-id"?: string;
@@ -3988,7 +4102,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Session expired or invalid */
+            /** @description La sesión ha expirado o no es válida */
             401: {
                 headers: {
                     "x-request-id"?: string;
@@ -3998,7 +4112,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Not allowed to perform this action */
+            /** @description No tiene permiso para realizar esta acción */
             403: {
                 headers: {
                     "x-request-id"?: string;
@@ -4008,7 +4122,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Session not found */
+            /** @description No se encontró la sesión */
             404: {
                 headers: {
                     "x-request-id"?: string;
@@ -4018,7 +4132,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Internal error */
+            /** @description Error interno */
             500: {
                 headers: {
                     "x-request-id"?: string;
@@ -4056,7 +4170,7 @@ export interface operations {
                     "application/json": components["schemas"]["SessionResponse"];
                 };
             };
-            /** @description Malformed request body or invalid ID */
+            /** @description El cuerpo de la solicitud tiene un formato incorrecto o el ID no es válido */
             400: {
                 headers: {
                     "x-request-id"?: string;
@@ -4066,7 +4180,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Session expired or invalid */
+            /** @description La sesión ha expirado o no es válida */
             401: {
                 headers: {
                     "x-request-id"?: string;
@@ -4076,7 +4190,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Not allowed to perform this action */
+            /** @description No tiene permiso para realizar esta acción */
             403: {
                 headers: {
                     "x-request-id"?: string;
@@ -4086,7 +4200,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Session not found */
+            /** @description No se encontró la sesión */
             404: {
                 headers: {
                     "x-request-id"?: string;
@@ -4096,7 +4210,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Internal error */
+            /** @description Error interno */
             500: {
                 headers: {
                     "x-request-id"?: string;
@@ -4134,7 +4248,7 @@ export interface operations {
                     "application/json": components["schemas"]["Appointment"];
                 };
             };
-            /** @description Malformed request body */
+            /** @description El cuerpo de la solicitud tiene un formato incorrecto */
             400: {
                 headers: {
                     "x-request-id"?: string;
@@ -4144,7 +4258,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Session expired or invalid */
+            /** @description La sesión ha expirado o no es válida */
             401: {
                 headers: {
                     "x-request-id"?: string;
@@ -4154,7 +4268,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Not allowed to perform this action */
+            /** @description No tiene permiso para realizar esta acción */
             403: {
                 headers: {
                     "x-request-id"?: string;
@@ -4164,7 +4278,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Appointment session not found, or creator not part of the clinic */
+            /** @description No se encontró la sesión del turno, o el creador no forma parte de la clínica */
             404: {
                 headers: {
                     "x-request-id"?: string;
@@ -4174,7 +4288,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Time slot conflict or duplicate request */
+            /** @description Conflicto de horario o solicitud duplicada */
             409: {
                 headers: {
                     "x-request-id"?: string;
@@ -4184,7 +4298,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Internal error */
+            /** @description Error interno */
             500: {
                 headers: {
                     "x-request-id"?: string;
@@ -4215,7 +4329,7 @@ export interface operations {
                     "application/json": components["schemas"]["Staff"][];
                 };
             };
-            /** @description Session expired or invalid */
+            /** @description La sesión ha expirado o no es válida */
             401: {
                 headers: {
                     "x-request-id"?: string;
@@ -4225,7 +4339,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Not allowed to perform this action */
+            /** @description No tiene permiso para realizar esta acción */
             403: {
                 headers: {
                     "x-request-id"?: string;
@@ -4235,7 +4349,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Internal error */
+            /** @description Error interno */
             500: {
                 headers: {
                     "x-request-id"?: string;
@@ -4269,7 +4383,7 @@ export interface operations {
                     "application/json": components["schemas"]["Staff"];
                 };
             };
-            /** @description The given ID is invalid */
+            /** @description El ID proporcionado no es válido */
             400: {
                 headers: {
                     "x-request-id"?: string;
@@ -4279,7 +4393,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Session expired or invalid */
+            /** @description La sesión ha expirado o no es válida */
             401: {
                 headers: {
                     "x-request-id"?: string;
@@ -4289,7 +4403,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Not allowed to perform this action */
+            /** @description No tiene permiso para realizar esta acción */
             403: {
                 headers: {
                     "x-request-id"?: string;
@@ -4299,7 +4413,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Internal error */
+            /** @description Error interno */
             500: {
                 headers: {
                     "x-request-id"?: string;
@@ -4337,7 +4451,7 @@ export interface operations {
                     "application/json": components["schemas"]["Staff"];
                 };
             };
-            /** @description Malformed request body or invalid ID */
+            /** @description El cuerpo de la solicitud tiene un formato incorrecto o el ID no es válido */
             400: {
                 headers: {
                     "x-request-id"?: string;
@@ -4347,7 +4461,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Session expired or invalid */
+            /** @description La sesión ha expirado o no es válida */
             401: {
                 headers: {
                     "x-request-id"?: string;
@@ -4357,7 +4471,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Not allowed to perform this action */
+            /** @description No tiene permiso para realizar esta acción */
             403: {
                 headers: {
                     "x-request-id"?: string;
@@ -4367,7 +4481,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Nothing to update was provided */
+            /** @description No se proporcionó ningún dato para actualizar */
             422: {
                 headers: {
                     "x-request-id"?: string;
@@ -4377,7 +4491,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Internal error */
+            /** @description Error interno */
             500: {
                 headers: {
                     "x-request-id"?: string;
@@ -4412,7 +4526,7 @@ export interface operations {
                     "application/json": components["schemas"]["Treatment"];
                 };
             };
-            /** @description Malformed request body */
+            /** @description El cuerpo de la solicitud tiene un formato incorrecto */
             400: {
                 headers: {
                     "x-request-id"?: string;
@@ -4422,7 +4536,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Session expired or invalid */
+            /** @description La sesión ha expirado o no es válida */
             401: {
                 headers: {
                     "x-request-id"?: string;
@@ -4432,7 +4546,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Not allowed to perform this action */
+            /** @description No tiene permiso para realizar esta acción */
             403: {
                 headers: {
                     "x-request-id"?: string;
@@ -4442,7 +4556,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Internal error */
+            /** @description Error interno */
             500: {
                 headers: {
                     "x-request-id"?: string;
@@ -4476,7 +4590,7 @@ export interface operations {
                     "application/json": components["schemas"]["Treatment"][];
                 };
             };
-            /** @description The given ID is invalid */
+            /** @description El ID proporcionado no es válido */
             400: {
                 headers: {
                     "x-request-id"?: string;
@@ -4486,7 +4600,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Session expired or invalid */
+            /** @description La sesión ha expirado o no es válida */
             401: {
                 headers: {
                     "x-request-id"?: string;
@@ -4496,7 +4610,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Not allowed to perform this action */
+            /** @description No tiene permiso para realizar esta acción */
             403: {
                 headers: {
                     "x-request-id"?: string;
@@ -4506,7 +4620,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Internal error */
+            /** @description Error interno */
             500: {
                 headers: {
                     "x-request-id"?: string;
@@ -4540,7 +4654,7 @@ export interface operations {
                     "application/json": components["schemas"]["Treatment"][];
                 };
             };
-            /** @description The given ID is invalid */
+            /** @description El ID proporcionado no es válido */
             400: {
                 headers: {
                     "x-request-id"?: string;
@@ -4550,7 +4664,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Session expired or invalid */
+            /** @description La sesión ha expirado o no es válida */
             401: {
                 headers: {
                     "x-request-id"?: string;
@@ -4560,7 +4674,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Not allowed to perform this action */
+            /** @description No tiene permiso para realizar esta acción */
             403: {
                 headers: {
                     "x-request-id"?: string;
@@ -4570,7 +4684,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Internal error */
+            /** @description Error interno */
             500: {
                 headers: {
                     "x-request-id"?: string;
@@ -4604,7 +4718,7 @@ export interface operations {
                     "application/json": components["schemas"]["Treatment"];
                 };
             };
-            /** @description The given ID is invalid */
+            /** @description El ID proporcionado no es válido */
             400: {
                 headers: {
                     "x-request-id"?: string;
@@ -4614,7 +4728,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Session expired or invalid */
+            /** @description La sesión ha expirado o no es válida */
             401: {
                 headers: {
                     "x-request-id"?: string;
@@ -4624,7 +4738,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Not allowed to perform this action */
+            /** @description No tiene permiso para realizar esta acción */
             403: {
                 headers: {
                     "x-request-id"?: string;
@@ -4634,7 +4748,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Internal error */
+            /** @description Error interno */
             500: {
                 headers: {
                     "x-request-id"?: string;
@@ -4666,7 +4780,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description The given ID is invalid */
+            /** @description El ID proporcionado no es válido */
             400: {
                 headers: {
                     "x-request-id"?: string;
@@ -4676,7 +4790,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Session expired or invalid */
+            /** @description La sesión ha expirado o no es válida */
             401: {
                 headers: {
                     "x-request-id"?: string;
@@ -4686,7 +4800,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Not allowed to perform this action */
+            /** @description No tiene permiso para realizar esta acción */
             403: {
                 headers: {
                     "x-request-id"?: string;
@@ -4696,7 +4810,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Internal error */
+            /** @description Error interno */
             500: {
                 headers: {
                     "x-request-id"?: string;
@@ -4734,7 +4848,7 @@ export interface operations {
                     "application/json": components["schemas"]["Treatment"];
                 };
             };
-            /** @description Malformed request body or invalid ID */
+            /** @description El cuerpo de la solicitud tiene un formato incorrecto o el ID no es válido */
             400: {
                 headers: {
                     "x-request-id"?: string;
@@ -4744,7 +4858,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Session expired or invalid */
+            /** @description La sesión ha expirado o no es válida */
             401: {
                 headers: {
                     "x-request-id"?: string;
@@ -4754,7 +4868,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Not allowed to perform this action */
+            /** @description No tiene permiso para realizar esta acción */
             403: {
                 headers: {
                     "x-request-id"?: string;
@@ -4764,7 +4878,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Internal error */
+            /** @description Error interno */
             500: {
                 headers: {
                     "x-request-id"?: string;
@@ -4798,7 +4912,7 @@ export interface operations {
                     "application/json": components["schemas"]["NoteResponse"][];
                 };
             };
-            /** @description The given ID is invalid */
+            /** @description El ID proporcionado no es válido */
             400: {
                 headers: {
                     "x-request-id"?: string;
@@ -4808,7 +4922,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Session expired or invalid */
+            /** @description La sesión ha expirado o no es válida */
             401: {
                 headers: {
                     "x-request-id"?: string;
@@ -4818,7 +4932,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Not allowed to perform this action */
+            /** @description No tiene permiso para realizar esta acción */
             403: {
                 headers: {
                     "x-request-id"?: string;
@@ -4828,7 +4942,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Internal error */
+            /** @description Error interno */
             500: {
                 headers: {
                     "x-request-id"?: string;
@@ -4866,7 +4980,7 @@ export interface operations {
                     "application/json": components["schemas"]["NoteResponse"];
                 };
             };
-            /** @description Malformed request body or invalid ID */
+            /** @description El cuerpo de la solicitud tiene un formato incorrecto o el ID no es válido */
             400: {
                 headers: {
                     "x-request-id"?: string;
@@ -4876,7 +4990,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Session expired or invalid */
+            /** @description La sesión ha expirado o no es válida */
             401: {
                 headers: {
                     "x-request-id"?: string;
@@ -4886,7 +5000,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Not allowed to perform this action */
+            /** @description No tiene permiso para realizar esta acción */
             403: {
                 headers: {
                     "x-request-id"?: string;
@@ -4896,7 +5010,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Internal error */
+            /** @description Error interno */
             500: {
                 headers: {
                     "x-request-id"?: string;
@@ -4930,7 +5044,7 @@ export interface operations {
                     "application/json": components["schemas"]["SessionResponse"][];
                 };
             };
-            /** @description The given ID is invalid */
+            /** @description El ID proporcionado no es válido */
             400: {
                 headers: {
                     "x-request-id"?: string;
@@ -4940,7 +5054,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Session expired or invalid */
+            /** @description La sesión ha expirado o no es válida */
             401: {
                 headers: {
                     "x-request-id"?: string;
@@ -4950,7 +5064,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Not allowed to perform this action */
+            /** @description No tiene permiso para realizar esta acción */
             403: {
                 headers: {
                     "x-request-id"?: string;
@@ -4960,7 +5074,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Internal error */
+            /** @description Error interno */
             500: {
                 headers: {
                     "x-request-id"?: string;
@@ -4991,7 +5105,7 @@ export interface operations {
                     "application/json": components["schemas"]["User"][];
                 };
             };
-            /** @description Session expired or invalid */
+            /** @description La sesión ha expirado o no es válida */
             401: {
                 headers: {
                     "x-request-id"?: string;
@@ -5001,7 +5115,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Not allowed to perform this action */
+            /** @description No tiene permiso para realizar esta acción */
             403: {
                 headers: {
                     "x-request-id"?: string;
@@ -5011,7 +5125,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Internal error */
+            /** @description Error interno */
             500: {
                 headers: {
                     "x-request-id"?: string;
@@ -5044,7 +5158,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description Malformed request body */
+            /** @description El cuerpo de la solicitud tiene un formato incorrecto */
             400: {
                 headers: {
                     "x-request-id"?: string;
@@ -5054,7 +5168,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Session expired or invalid */
+            /** @description La sesión ha expirado o no es válida */
             401: {
                 headers: {
                     "x-request-id"?: string;
@@ -5064,7 +5178,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Not allowed to perform this action */
+            /** @description No tiene permiso para realizar esta acción */
             403: {
                 headers: {
                     "x-request-id"?: string;
@@ -5074,7 +5188,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description A user with that name or email already exists */
+            /** @description Ya existe un usuario con ese nombre o correo electrónico */
             409: {
                 headers: {
                     "x-request-id"?: string;
@@ -5084,7 +5198,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Internal error */
+            /** @description Error interno */
             500: {
                 headers: {
                     "x-request-id"?: string;
@@ -5118,7 +5232,7 @@ export interface operations {
                     "application/json": components["schemas"]["User"];
                 };
             };
-            /** @description The given ID is invalid */
+            /** @description El ID proporcionado no es válido */
             400: {
                 headers: {
                     "x-request-id"?: string;
@@ -5128,7 +5242,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Session expired or invalid */
+            /** @description La sesión ha expirado o no es válida */
             401: {
                 headers: {
                     "x-request-id"?: string;
@@ -5138,7 +5252,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Not allowed to perform this action */
+            /** @description No tiene permiso para realizar esta acción */
             403: {
                 headers: {
                     "x-request-id"?: string;
@@ -5148,7 +5262,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Internal error */
+            /** @description Error interno */
             500: {
                 headers: {
                     "x-request-id"?: string;
@@ -5180,7 +5294,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description The given ID is invalid */
+            /** @description El ID proporcionado no es válido */
             400: {
                 headers: {
                     "x-request-id"?: string;
@@ -5190,7 +5304,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Session expired or invalid */
+            /** @description La sesión ha expirado o no es válida */
             401: {
                 headers: {
                     "x-request-id"?: string;
@@ -5200,7 +5314,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Not allowed to perform this action */
+            /** @description No tiene permiso para realizar esta acción */
             403: {
                 headers: {
                     "x-request-id"?: string;
@@ -5210,7 +5324,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Internal error */
+            /** @description Error interno */
             500: {
                 headers: {
                     "x-request-id"?: string;

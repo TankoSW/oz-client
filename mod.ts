@@ -72,124 +72,190 @@ function withCallbacks<Operation>(
 
 /** OpenAPI schema `ActiveTreatment`. */
 export type ActiveTreatment = components["schemas"]["ActiveTreatment"];
+
 /** OpenAPI schema `Appointment`. */
 export type Appointment = components["schemas"]["Appointment"];
+
 /** OpenAPI schema `AppointmentId`. */
 export type AppointmentId = components["schemas"]["AppointmentId"];
+
 /** OpenAPI schema `AuthToken`. */
 export type AuthToken = components["schemas"]["AuthToken"];
+
 /** OpenAPI schema `BillingType`. */
 export type BillingType = components["schemas"]["BillingType"];
+
 /** OpenAPI schema `ChangePasswordRequest`. */
 export type ChangePasswordRequest = components["schemas"]["ChangePasswordRequest"];
+
 /** OpenAPI schema `ClinicHistoryResponse`. */
 export type ClinicHistoryResponse = components["schemas"]["ClinicHistoryResponse"];
+
 /** OpenAPI schema `ClinicStats`. */
 export type ClinicStats = components["schemas"]["ClinicStats"];
+
 /** OpenAPI schema `CreateClinicRequest`. */
 export type CreateClinicRequest = components["schemas"]["CreateClinicRequest"];
+
 /** OpenAPI schema `CreateClinicResponse`. */
 export type CreateClinicResponse = components["schemas"]["CreateClinicResponse"];
+
 /** OpenAPI schema `CreateNoteRequest`. */
 export type CreateNoteRequest = components["schemas"]["CreateNoteRequest"];
+
 /** OpenAPI schema `CreateObraSocialRequest`. */
 export type CreateObraSocialRequest = components["schemas"]["CreateObraSocialRequest"];
+
 /** OpenAPI schema `CreatePatientRequest`. */
 export type CreatePatientRequest = components["schemas"]["CreatePatientRequest"];
+
 /** OpenAPI schema `CreatePaymentRequest`. */
 export type CreatePaymentRequest = components["schemas"]["CreatePaymentRequest"];
+
 /** OpenAPI schema `CreateRequest`. */
 export type CreateRequest = components["schemas"]["CreateRequest"];
+
 /** OpenAPI schema `CreateServiceRequest`. */
 export type CreateServiceRequest = components["schemas"]["CreateServiceRequest"];
+
 /** OpenAPI schema `CreateSessionRequest`. */
 export type CreateSessionRequest = components["schemas"]["CreateSessionRequest"];
+
 /** OpenAPI schema `CreateTreatmentRequest`. */
 export type CreateTreatmentRequest = components["schemas"]["CreateTreatmentRequest"];
+
 /** OpenAPI schema `CreateUserRequest`. */
 export type CreateUserRequest = components["schemas"]["CreateUserRequest"];
+
 /** OpenAPI schema `Credentials`. */
 export type Credentials = components["schemas"]["Credentials"];
+
 /** OpenAPI schema `Date`. */
 export type Date = components["schemas"]["Date"];
+
 /** OpenAPI schema `DeletePaymentRequest`. */
 export type DeletePaymentRequest = components["schemas"]["DeletePaymentRequest"];
+
 /** OpenAPI schema `ErrorCode`. */
 export type ErrorCode = components["schemas"]["ErrorCode"];
+
 /** OpenAPI schema `ErrorResponse`. */
 export type ErrorResponse = components["schemas"]["ErrorResponse"];
+
 /** OpenAPI schema `ForgotPasswordRequest`. */
 export type ForgotPasswordRequest = components["schemas"]["ForgotPasswordRequest"];
+
+/** OpenAPI schema `ImageResponse`. */
+export type ImageResponse = components["schemas"]["ImageResponse"];
+
+/** OpenAPI schema `ImageUploadRequest`. */
+export type ImageUploadRequest = components["schemas"]["ImageUploadRequest"];
+
 /** OpenAPI schema `LoginResponse`. */
 export type LoginResponse = components["schemas"]["LoginResponse"];
+
 /** OpenAPI schema `NoteResponse`. */
 export type NoteResponse = components["schemas"]["NoteResponse"];
+
 /** OpenAPI schema `ObraSocialResponse`. */
 export type ObraSocialResponse = components["schemas"]["ObraSocialResponse"];
+
 /** OpenAPI schema `PatientData`. */
 export type PatientData = components["schemas"]["PatientData"];
+
 /** OpenAPI schema `PatientId`. */
 export type PatientId = components["schemas"]["PatientId"];
+
 /** OpenAPI schema `PatientResponse`. */
 export type PatientResponse = components["schemas"]["PatientResponse"];
+
 /** OpenAPI schema `PatientStatus`. */
 export type PatientStatus = components["schemas"]["PatientStatus"];
+
 /** OpenAPI schema `PaymentDetail`. */
 export type PaymentDetail = components["schemas"]["PaymentDetail"];
+
 /** OpenAPI schema `PaymentMethod`. */
 export type PaymentMethod = components["schemas"]["PaymentMethod"];
+
 /** OpenAPI schema `PaymentResponse`. */
 export type PaymentResponse = components["schemas"]["PaymentResponse"];
+
 /** OpenAPI schema `RoleData`. */
 export type RoleData = components["schemas"]["RoleData"];
+
 /** OpenAPI schema `ServiceResponse`. */
 export type ServiceResponse = components["schemas"]["ServiceResponse"];
+
 /** OpenAPI schema `SessionId`. */
 export type SessionId = components["schemas"]["SessionId"];
+
 /** OpenAPI schema `SessionResponse`. */
 export type SessionResponse = components["schemas"]["SessionResponse"];
+
 /** OpenAPI schema `SessionStatus`. */
 export type SessionStatus = components["schemas"]["SessionStatus"];
+
 /** OpenAPI schema `Staff`. */
 export type Staff = components["schemas"]["Staff"];
+
 /** OpenAPI schema `StaffId`. */
 export type StaffId = components["schemas"]["StaffId"];
+
 /** OpenAPI schema `StaffInfo`. */
 export type StaffInfo = components["schemas"]["StaffInfo"];
+
 /** OpenAPI schema `Status`. */
 export type Status = components["schemas"]["Status"];
+
 /** OpenAPI schema `Treatment`. */
 export type Treatment = components["schemas"]["Treatment"];
+
 /** OpenAPI schema `TreatmentStatus`. */
 export type TreatmentStatus = components["schemas"]["TreatmentStatus"];
+
 /** OpenAPI schema `UpdateAppointment`. */
 export type UpdateAppointment = components["schemas"]["UpdateAppointment"];
+
 /** OpenAPI schema `UpdateNoteRequest`. */
 export type UpdateNoteRequest = components["schemas"]["UpdateNoteRequest"];
+
 /** OpenAPI schema `UpdateObraSocialRequest`. */
 export type UpdateObraSocialRequest = components["schemas"]["UpdateObraSocialRequest"];
+
 /** OpenAPI schema `UpdatePatientRequest`. */
 export type UpdatePatientRequest = components["schemas"]["UpdatePatientRequest"];
+
 /** OpenAPI schema `UpdatePaymentRequest`. */
 export type UpdatePaymentRequest = components["schemas"]["UpdatePaymentRequest"];
+
 /** OpenAPI schema `UpdateServiceRequest`. */
 export type UpdateServiceRequest = components["schemas"]["UpdateServiceRequest"];
+
 /** OpenAPI schema `UpdateSessionRequest`. */
 export type UpdateSessionRequest = components["schemas"]["UpdateSessionRequest"];
+
 /** OpenAPI schema `UpdateStaffRequest`. */
 export type UpdateStaffRequest = components["schemas"]["UpdateStaffRequest"];
+
 /** OpenAPI schema `UpdateTreatmentRequest`. */
 export type UpdateTreatmentRequest = components["schemas"]["UpdateTreatmentRequest"];
+
 /** OpenAPI schema `UpdateUserSettings`. */
 export type UpdateUserSettings = components["schemas"]["UpdateUserSettings"];
+
 /** OpenAPI schema `User`. */
 export type User = components["schemas"]["User"];
+
 /** OpenAPI schema `UserId`. */
 export type UserId = components["schemas"]["UserId"];
+
 /** OpenAPI schema `UserRole`. */
 export type UserRole = components["schemas"]["UserRole"];
+
 /** OpenAPI schema `UserSettings`. */
 export type UserSettings = components["schemas"]["UserSettings"];
+
 
 /** The grouped, typed client returned by `createOzClient`. */
 export interface OzClient {
@@ -238,6 +304,10 @@ export interface OzClient {
     getClinicService: (body: OzRequestOptions<operations["get_clinic_service"]>) => ReturnType<ClientForPath<paths["/api/v1/clinic_service/{service_id}"], "application/json">["GET"]>;
     /** Calls PATCH /api/v1/clinic_service/{service_id}. Per-call lifecycle callbacks override the client defaults. */
     updateClinicService: (body: OzRequestOptions<operations["update_clinic_service"]>) => ReturnType<ClientForPath<paths["/api/v1/clinic_service/{service_id}"], "application/json">["PATCH"]>;
+  };
+  media: {
+    /** Calls POST /api/v1/media. Per-call lifecycle callbacks override the client defaults. */
+    uploadImage: (body: OzRequestOptions<operations["upload_image"]>) => ReturnType<ClientForPath<paths["/api/v1/media"], "application/json">["POST"]>;
   };
   note: {
     /** Calls DELETE /api/v1/note/{note_id}. Per-call lifecycle callbacks override the client defaults. */
@@ -393,6 +463,10 @@ export function createOzClient(options: OzClientOptions): OzClient {
       getClinicService: (body: OzRequestOptions<operations["get_clinic_service"]>) => raw_client.GET("/api/v1/clinic_service/{service_id}", withCallbacks(body, defaults)),
       /** Calls PATCH /api/v1/clinic_service/{service_id}. Per-call lifecycle callbacks override the client defaults. */
       updateClinicService: (body: OzRequestOptions<operations["update_clinic_service"]>) => raw_client.PATCH("/api/v1/clinic_service/{service_id}", withCallbacks(body, defaults)),
+      },
+    media: {
+      /** Calls POST /api/v1/media. Per-call lifecycle callbacks override the client defaults. */
+      uploadImage: (body: OzRequestOptions<operations["upload_image"]>) => raw_client.POST("/api/v1/media", withCallbacks(body, defaults)),
       },
     note: {
       /** Calls DELETE /api/v1/note/{note_id}. Per-call lifecycle callbacks override the client defaults. */
