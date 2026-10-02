@@ -360,17 +360,51 @@ export interface paths {
         get?: never;
         put?: never;
         /**
-         * Uploads and attaches an image to a patient in the current user's clinic.
+         * Uploads and attaches an image to a treatment in the current user's clinic.
          * @description # Errors
          *
          *     Returns an error when the multipart request is malformed, the image is
-         *     invalid, storage fails, or the patient is not in the current user's clinic.
+         *     invalid, storage fails, or the treatment is not in the current user's
+         *     clinic.
          */
         post: operations["upload_image"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
+        trace?: never;
+    };
+    "/api/v1/media/{image_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /**
+         * Deletes an image by `image_id`, removing both the stored file and its
+         *     database records.
+         * @description # Errors
+         *
+         *     Returns `400` if the image ID is invalid, `401` if the session is invalid,
+         *     `403` on authorization failures, `404` if the image does not exist, and
+         *     `500` on database or storage errors.
+         */
+        delete: operations["delete_image"];
+        options?: never;
+        head?: never;
+        /**
+         * Updates the description of an image by `image_id`.
+         * @description # Errors
+         *
+         *     Returns `400` if the body or image ID is invalid, `401` if the session is
+         *     invalid, `403` on authorization failures, `404` if the image does not
+         *     exist, and `500` on database errors or when a public URL cannot be built.
+         */
+        patch: operations["update_image"];
         trace?: never;
     };
     "/api/v1/note/{note_id}": {
@@ -934,6 +968,30 @@ export interface paths {
         patch: operations["update_treatment"];
         trace?: never;
     };
+    "/api/v1/treatment/{treatment_id}/media": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Lists the images attached to a treatment by `treatment_id`.
+         * @description # Errors
+         *
+         *     Returns `400` if the treatment ID is invalid, `401` if the session is
+         *     invalid, `403` on authorization failures, and `500` on database errors or
+         *     when a public URL cannot be built.
+         */
+        get: operations["get_all_images_in_treatment"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/treatment/{treatment_id}/notes": {
         parameters: {
             query?: never;
@@ -1054,6 +1112,7 @@ export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
         ActiveTreatment: {
+            images: components["schemas"]["ImageResponse"][];
             notes: components["schemas"]["NoteResponse"][];
             sessions: components["schemas"]["SessionResponse"][];
             treatment: components["schemas"]["Treatment"];
@@ -1215,19 +1274,37 @@ export interface components {
         ForgotPasswordRequest: {
             email: string;
         };
+        /** @description An image attached to a treatment, ready to be served to the browser. */
         ImageResponse: {
+            /** @example image/webp */
+            content_type: string;
+            /** Format: date-time */
+            created_at: string;
+            /** @description Name of the user that uploaded the image. */
+            created_by: string;
+            /**
+             * @description Optional free-text description of the image.
+             * @example Radiografía de rodilla derecha
+             */
+            description?: string | null;
             /**
              * @description Generated filename of the canonical WebP image.
              * @example V1StGXR8_Z.webp
              */
             filename: string;
+            /** @example V1StGXR8_Z */
+            id: string;
+            /** Format: int64 */
+            size_bytes: number;
             /**
-             * @description Public URL of the uploaded image.
+             * @description Public URL of the image.
              * @example https://images.example.com/images/V1StGXR8_Z.webp
              */
             url: string;
         };
         ImageUploadRequest: {
+            /** @description Optional description of the image, up to 1000 characters. */
+            description?: string | null;
             /**
              * Format: binary
              * @description Image file to upload. JPEG, PNG, and WebP are accepted.
@@ -1403,6 +1480,14 @@ export interface components {
                 start: string;
             };
         };
+        UpdateImageRequest: {
+            /**
+             * @description New description of the image, up to 1000 characters. `null` or an empty
+             *     string clears it.
+             * @example Radiografía de rodilla derecha
+             */
+            description?: string | null;
+        };
         UpdateNoteRequest: {
             content: string;
         };
@@ -1459,6 +1544,20 @@ export interface components {
             extra?: unknown;
             locale?: string | null;
             theme?: string | null;
+        };
+        UploadedImageResponse: {
+            /** @description Description of the uploaded image, if any. */
+            description?: string | null;
+            /**
+             * @description Generated filename of the canonical WebP image.
+             * @example V1StGXR8_Z.webp
+             */
+            filename: string;
+            /**
+             * @description Public URL of the uploaded image.
+             * @example https://images.example.com/images/V1StGXR8_Z.webp
+             */
+            url: string;
         };
         /**
          * @description Stands for a normal user. It'll have a username and email which are validated at construction and a [`UserRole`] that later restricts what operations it'll be able to do.
@@ -2542,8 +2641,8 @@ export interface operations {
     upload_image: {
         parameters: {
             query: {
-                /** @description Public ID of the patient this image is related to. */
-                patient_id: string;
+                /** @description Public ID of the treatment this image is related to. */
+                treatment_id: string;
             };
             header?: never;
             path?: never;
@@ -2555,16 +2654,16 @@ export interface operations {
             };
         };
         responses: {
-            /** @description Image uploaded and attached to the patient */
+            /** @description Image uploaded and attached to the treatment */
             201: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ImageResponse"];
+                    "application/json": components["schemas"]["UploadedImageResponse"];
                 };
             };
-            /** @description Falta el archivo o el patient_id, o alguno no es válido */
+            /** @description Falta el archivo o el treatment_id, o alguno no es válido */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -2573,7 +2672,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description No se encontró el paciente en la clínica del usuario autenticado */
+            /** @description No se encontró el tratamiento en la clínica del usuario autenticado */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -2603,6 +2702,156 @@ export interface operations {
             /** @description El almacenamiento de archivos no está disponible */
             503: {
                 headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    delete_image: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Image ID */
+                image_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Image deleted */
+            200: {
+                headers: {
+                    "x-request-id"?: string;
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description El ID proporcionado no es válido */
+            400: {
+                headers: {
+                    "x-request-id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description La sesión ha expirado o no es válida */
+            401: {
+                headers: {
+                    "x-request-id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description No tiene permiso para realizar esta acción */
+            403: {
+                headers: {
+                    "x-request-id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description No se encontró la imagen */
+            404: {
+                headers: {
+                    "x-request-id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Error interno */
+            500: {
+                headers: {
+                    "x-request-id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    update_image: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Image ID */
+                image_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateImageRequest"];
+            };
+        };
+        responses: {
+            /** @description Image updated */
+            200: {
+                headers: {
+                    "x-request-id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ImageResponse"];
+                };
+            };
+            /** @description El cuerpo de la solicitud tiene un formato incorrecto o el ID no es válido */
+            400: {
+                headers: {
+                    "x-request-id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description La sesión ha expirado o no es válida */
+            401: {
+                headers: {
+                    "x-request-id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description No tiene permiso para realizar esta acción */
+            403: {
+                headers: {
+                    "x-request-id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description No se encontró la imagen */
+            404: {
+                headers: {
+                    "x-request-id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Error interno */
+            500: {
+                headers: {
+                    "x-request-id"?: string;
                     [name: string]: unknown;
                 };
                 content: {
@@ -4849,6 +5098,70 @@ export interface operations {
                 };
             };
             /** @description El cuerpo de la solicitud tiene un formato incorrecto o el ID no es válido */
+            400: {
+                headers: {
+                    "x-request-id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description La sesión ha expirado o no es válida */
+            401: {
+                headers: {
+                    "x-request-id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description No tiene permiso para realizar esta acción */
+            403: {
+                headers: {
+                    "x-request-id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Error interno */
+            500: {
+                headers: {
+                    "x-request-id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    get_all_images_in_treatment: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Treatment ID */
+                treatment_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Images found */
+            200: {
+                headers: {
+                    "x-request-id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ImageResponse"][];
+                };
+            };
+            /** @description El ID proporcionado no es válido */
             400: {
                 headers: {
                     "x-request-id"?: string;
