@@ -363,7 +363,7 @@ export interface paths {
          * Uploads and attaches an image to a treatment in the current user's clinic.
          * @description # Errors
          *
-         *     Returns an error when the multipart request is malformed, the image is
+         *     Returns an error when the name or multipart file is missing, the image is
          *     invalid, storage fails, or the treatment is not in the current user's
          *     clinic.
          */
@@ -1294,6 +1294,8 @@ export interface components {
             filename: string;
             /** @example V1StGXR8_Z */
             id: string;
+            /** @description User supplied name for the attachment. */
+            name: string;
             /** Format: int64 */
             size_bytes: number;
             /**
@@ -1303,8 +1305,6 @@ export interface components {
             url: string;
         };
         ImageUploadRequest: {
-            /** @description Optional description of the image, up to 1000 characters. */
-            description?: string | null;
             /**
              * Format: binary
              * @description Image file to upload. JPEG, PNG, and WebP are accepted.
@@ -2643,6 +2643,10 @@ export interface operations {
             query: {
                 /** @description Public ID of the treatment this image is related to. */
                 treatment_id: string;
+                /** @description Display name for the image attachment. */
+                name: string;
+                /** @description Optional description of the image, up to 1000 characters. */
+                description?: string | null;
             };
             header?: never;
             path?: never;
@@ -2663,7 +2667,7 @@ export interface operations {
                     "application/json": components["schemas"]["UploadedImageResponse"];
                 };
             };
-            /** @description Falta el archivo o el treatment_id, o alguno no es válido */
+            /** @description Falta el nombre, el archivo o el treatment_id, o alguno no es válido */
             400: {
                 headers: {
                     [name: string]: unknown;
