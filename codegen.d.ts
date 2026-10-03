@@ -1222,8 +1222,17 @@ export interface components {
             billing_type?: components["schemas"]["BillingType"];
             description?: string | null;
             name: string;
-            /** Format: decimal */
+            /**
+             * Format: decimal
+             * @description Cash price.
+             */
             price: string;
+            /**
+             * Format: decimal
+             * @description Price when paid by bank transfer. When omitted or `null`, a transfer
+             *     costs the same as `price`.
+             */
+            transfer_price?: string | null;
         };
         CreateSessionRequest: {
             /**
@@ -1397,16 +1406,32 @@ export interface components {
             description?: string | null;
             id: string;
             name: string;
-            /** Format: decimal */
+            /**
+             * Format: decimal
+             * @description Cash price.
+             */
             price: string;
+            /**
+             * Format: decimal
+             * @description Price when paid by bank transfer. `null` means the same as `price`.
+             */
+            transfer_price?: string | null;
         };
         SessionId: string;
         SessionResponse: {
             appointment?: null | components["schemas"]["Appointment"];
+            /** @description Amount owed when paid in cash. */
             debt: string;
             evolution?: string | null;
             id: string;
+            /**
+             * Format: int32
+             * @description 1-based position of the session within its treatment.
+             */
+            number: number;
             status: components["schemas"]["SessionStatus"];
+            /** @description Amount owed when paid by transfer. `null` means the same as `debt`. */
+            transfer_debt?: string | null;
         };
         /** @enum {string} */
         SessionStatus: "done" | "pending" | "canceled";
@@ -1510,8 +1535,17 @@ export interface components {
         UpdateServiceRequest: {
             description?: string | null;
             name?: string | null;
-            /** Format: decimal */
+            /**
+             * Format: decimal
+             * @description Cash price.
+             */
             price: string;
+            /**
+             * Format: decimal
+             * @description Price when paid by bank transfer. Omit it to keep the current one, or
+             *     send `null` to remove it so a transfer costs the same as `price`.
+             */
+            transfer_price?: string | null;
         };
         UpdateSessionRequest: {
             evolution?: string | null;
