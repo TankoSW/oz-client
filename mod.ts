@@ -332,6 +332,8 @@ export interface OzClient {
     getAllObrasSociales: (body?: OzRequestOptions<operations["get_all_obras_sociales"]>) => ReturnType<ClientForPath<paths["/api/v1/obra"], "application/json">["GET"]>;
     /** Calls POST /api/v1/obra. Per-call lifecycle callbacks override the client defaults. */
     createObraSocial: (body: OzRequestOptions<operations["create_obra_social"]>) => ReturnType<ClientForPath<paths["/api/v1/obra"], "application/json">["POST"]>;
+    /** Calls DELETE /api/v1/obra/{name}. Per-call lifecycle callbacks override the client defaults. */
+    deleteObraSocial: (body: OzRequestOptions<operations["delete_obra_social"]>) => ReturnType<ClientForPath<paths["/api/v1/obra/{name}"], "application/json">["DELETE"]>;
     /** Calls GET /api/v1/obra/{name}. Per-call lifecycle callbacks override the client defaults. */
     getObraSocial: (body: OzRequestOptions<operations["get_obra_social"]>) => ReturnType<ClientForPath<paths["/api/v1/obra/{name}"], "application/json">["GET"]>;
     /** Calls PATCH /api/v1/obra/{name}. Per-call lifecycle callbacks override the client defaults. */
@@ -497,6 +499,8 @@ export function createOzClient(options: OzClientOptions): OzClient {
       getAllObrasSociales: (body?: OzRequestOptions<operations["get_all_obras_sociales"]>) => raw_client.GET("/api/v1/obra", withCallbacks(body, defaults)),
       /** Calls POST /api/v1/obra. Per-call lifecycle callbacks override the client defaults. */
       createObraSocial: (body: OzRequestOptions<operations["create_obra_social"]>) => raw_client.POST("/api/v1/obra", withCallbacks(body, defaults)),
+      /** Calls DELETE /api/v1/obra/{name}. Per-call lifecycle callbacks override the client defaults. */
+      deleteObraSocial: (body: OzRequestOptions<operations["delete_obra_social"]>) => raw_client.DELETE("/api/v1/obra/{name}", withCallbacks(body, defaults)),
       /** Calls GET /api/v1/obra/{name}. Per-call lifecycle callbacks override the client defaults. */
       getObraSocial: (body: OzRequestOptions<operations["get_obra_social"]>) => raw_client.GET("/api/v1/obra/{name}", withCallbacks(body, defaults)),
       /** Calls PATCH /api/v1/obra/{name}. Per-call lifecycle callbacks override the client defaults. */

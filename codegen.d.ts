@@ -467,8 +467,10 @@ export interface paths {
          * @description # Errors
          *
          *     Returns `400` for a malformed request body, `401` for an invalid session,
-         *     `403` when the operation is forbidden, `422` if the surcharge cannot be
-         *     deserialized, and `500` on database errors.
+         *     `403` when the operation is forbidden, `400` if the name is empty or the
+         *     surcharge is not positive, `409` if the clinic already has an obra social
+         *     with that name, `422` if the surcharge cannot be deserialized, and `500` on
+         *     database errors.
          */
         post: operations["create_obra_social"];
         delete?: never;
@@ -495,7 +497,17 @@ export interface paths {
         get: operations["get_obra_social"];
         put?: never;
         post?: never;
-        delete?: never;
+        /**
+         * Deletes an insurance provider by name.
+         * @description Patients that had it assigned are left without an obra social.
+         *
+         *     # Errors
+         *
+         *     Returns `401` if the session is invalid, `403` if the operation is
+         *     forbidden, `404` if the obra social does not exist, and `500` on database
+         *     errors.
+         */
+        delete: operations["delete_obra_social"];
         options?: never;
         head?: never;
         /**
@@ -503,9 +515,9 @@ export interface paths {
          * @description # Errors
          *
          *     Returns `400` for a malformed request body, `401` for an invalid session,
-         *     `403` when the operation is forbidden, `404` if the obra social does not
-         *     exist, `422` if the surcharge cannot be deserialized, and `500` on
-         *     database errors.
+         *     `403` when the operation is forbidden, `400` if the surcharge is not
+         *     positive, `404` if the obra social does not exist, `422` if the surcharge
+         *     cannot be deserialized, and `500` on database errors.
          */
         patch: operations["update_obra_social"];
         trace?: never;
@@ -1274,7 +1286,7 @@ export interface components {
             reason: string;
         };
         /** @enum {string} */
-        ErrorCode: "DuplicateUser" | "DuplicateRequest" | "InvalidId" | "ExpiredSession" | "MissingRow" | "InvalidCredentials" | "ValidationFailed" | "PayloadTooLarge" | "ClinicAlreadyExists" | "InvalidJson" | "TimeSlotConflict" | "ServiceUnavailable" | "DatabaseError" | "InternalError" | "Opaque";
+        ErrorCode: "DuplicateUser" | "DuplicateRequest" | "InvalidId" | "ExpiredSession" | "MissingRow" | "InvalidCredentials" | "ValidationFailed" | "PayloadTooLarge" | "ClinicAlreadyExists" | "ObraSocialAlreadyExists" | "InvalidJson" | "TimeSlotConflict" | "ServiceUnavailable" | "DatabaseError" | "InternalError" | "Opaque";
         ErrorResponse: {
             code: components["schemas"]["ErrorCode"];
             hint?: string | null;
@@ -1539,7 +1551,7 @@ export interface components {
              * Format: decimal
              * @description Cash price.
              */
-            price: string;
+            price?: string | null;
             /**
              * Format: decimal
              * @description Price when paid by bank transfer. Omit it to keep the current one, or
@@ -3216,6 +3228,16 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
+            /** @description Ya existe una obra social con ese nombre */
+            409: {
+                headers: {
+                    "x-request-id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
             /** @description No fue posible interpretar el recargo */
             422: {
                 headers: {
@@ -3259,6 +3281,68 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["ObraSocialResponse"];
                 };
+            };
+            /** @description La sesión ha expirado o no es válida */
+            401: {
+                headers: {
+                    "x-request-id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description No tiene permiso para realizar esta acción */
+            403: {
+                headers: {
+                    "x-request-id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description No se encontró la obra social */
+            404: {
+                headers: {
+                    "x-request-id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Error interno */
+            500: {
+                headers: {
+                    "x-request-id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    delete_obra_social: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Obra social name */
+                name: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Obra Social deleted */
+            200: {
+                headers: {
+                    "x-request-id"?: string;
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
             /** @description La sesión ha expirado o no es válida */
             401: {
