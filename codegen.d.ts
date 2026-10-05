@@ -1536,7 +1536,11 @@ export interface components {
             address?: string | null;
             birth_date?: null | components["schemas"]["Date"];
             dni?: string | null;
+            /** Format: int64 */
+            id_obra_social?: number | null;
             name?: string | null;
+            /** Format: int64 */
+            num_afiliado?: number | null;
             occupation?: string | null;
             phone?: string | null;
             status?: null | components["schemas"]["PatientStatus"];
