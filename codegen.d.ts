@@ -89,7 +89,7 @@ export interface paths {
         /**
          * Updates an appointment by `appointment_id`.
          * @description The appointment's staff member, time slot, and other mutable fields are
-         *     taken from the request body.
+         *     taken from the request body. Responds with the updated appointment.
          *
          *     # Errors
          *
@@ -654,8 +654,10 @@ export interface paths {
          * Records a payment in the authenticated user's clinic.
          * @description # Errors
          *
-         *     Returns `400` for a malformed request body, `401` for an invalid session,
-         *     `403` when the operation is forbidden, `404` if a related row is missing,
+         *     Returns `400` for a malformed request body or when a session is already
+         *     covered by another payment, `401` for an invalid session, `403` when the
+         *     operation is forbidden, `404` if a related row (including a session of the
+         *     payer) is missing,
          *     `409` if the request is a duplicate, `422` if the payment data cannot be
          *     deserialized, and `500` on database errors.
          */
@@ -1211,6 +1213,11 @@ export interface components {
             /** @description This is key meant to make the handlers avoid repeating the same work done before. For that to happen this has to be a *random* string guaranteed to be unique. */
             idempotency_key: string;
             payer_id: string;
+            /**
+             * @description Sessions of the payer this payment covers. Each session can be covered
+             *     by a single active payment.
+             */
+            session_ids?: string[];
         };
         CreateRequest: {
             /**
@@ -1401,6 +1408,8 @@ export interface components {
             id: string;
             payer_id: string;
             payment_method: components["schemas"]["PaymentMethod"];
+            /** @description Sessions of the payer covered by this payment. */
+            session_ids: string[];
         };
         RoleData: {
             /** @enum {string} */
@@ -1441,6 +1450,8 @@ export interface components {
              * @description 1-based position of the session within its treatment.
              */
             number: number;
+            /** @description The active payment covering this session, if it has been paid. */
+            payment_id?: string | null;
             status: components["schemas"]["SessionStatus"];
             /** @description Amount owed when paid by transfer. `null` means the same as `debt`. */
             transfer_debt?: string | null;
@@ -1833,7 +1844,9 @@ export interface operations {
                     "x-request-id"?: string;
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["Appointment"];
+                };
             };
             /** @description El cuerpo de la solicitud tiene un formato incorrecto o el ID no es válido */
             400: {
@@ -4016,7 +4029,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description No se encontró el registro relacionado (clínica o creador) */
+            /** @description No se encontró el registro relacionado (clínica, creador o sesión del pagador) */
             404: {
                 headers: {
                     "x-request-id"?: string;
