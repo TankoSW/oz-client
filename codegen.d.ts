@@ -321,8 +321,9 @@ export interface paths {
          * @description # Errors
          *
          *     Returns `401` if the session is invalid, `403` if the operation is
-         *     forbidden, `404` if the clinic service does not exist, and `500` on
-         *     database errors.
+         *     forbidden, `404` if the clinic service does not exist, `409` if treatments,
+         *     sessions, or gym payments still use the service, and `500` on database
+         *     errors.
          */
         get: operations["get_clinic_service"];
         put?: never;
@@ -348,6 +349,217 @@ export interface paths {
          *     `500` on database errors.
          */
         patch: operations["update_clinic_service"];
+        trace?: never;
+    };
+    "/api/v1/group": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Lists groups for the authenticated staff member's clinic.
+         * @description # Errors
+         *
+         *     Returns an error if authentication fails or the database operation fails.
+         */
+        get: operations["get_all_groups"];
+        put?: never;
+        /**
+         * Creates a group with its initial schedules.
+         * @description # Errors
+         *
+         *     Returns an error if the request is invalid, the clinic service is missing,
+         *     or the database operation fails.
+         */
+        post: operations["create_group"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/group/{group_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Gets a group and its schedules.
+         * @description # Errors
+         *
+         *     Returns an error if the group is not found in the clinic or the database
+         *     operation fails.
+         */
+        get: operations["get_group"];
+        put?: never;
+        post?: never;
+        /**
+         * Deletes a group and its schedules.
+         * @description # Errors
+         *
+         *     Returns an error if the group is not found in the clinic or the database
+         *     operation fails.
+         */
+        delete: operations["delete_group"];
+        options?: never;
+        head?: never;
+        /**
+         * Updates a group and optionally replaces its schedules.
+         * @description # Errors
+         *
+         *     Returns an error if the request is invalid, the group or service is not
+         *     found in the clinic, or the database operation fails.
+         */
+        patch: operations["update_group"];
+        trace?: never;
+    };
+    "/api/v1/group/{group_id}/subscriptions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Lists subscriptions for the group identified by its public ID.
+         * @description # Errors
+         *
+         *     Returns an error if the group is not in the clinic or a database query
+         *     fails.
+         */
+        get: operations["get_all_group_subscriptions"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/group_schedule": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Creates a schedule for an existing group.
+         * @description # Errors
+         *
+         *     Returns an error if the group is not found in the clinic, the request is
+         *     invalid, or the database operation fails.
+         */
+        post: operations["create_group_schedule"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/group_schedule/{schedule_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Gets a schedule by its ID.
+         * @description # Errors
+         *
+         *     Returns an error if the schedule is not found in the clinic or the
+         *     database operation fails.
+         */
+        get: operations["get_group_schedule"];
+        put?: never;
+        post?: never;
+        /**
+         * Deletes a schedule by its ID.
+         * @description # Errors
+         *
+         *     Returns an error if the schedule is not found in the clinic or the
+         *     database operation fails.
+         */
+        delete: operations["delete_group_schedule"];
+        options?: never;
+        head?: never;
+        /**
+         * Updates a schedule by its ID.
+         * @description # Errors
+         *
+         *     Returns an error if the schedule is not found in the clinic, the request
+         *     is invalid, or the database operation fails.
+         */
+        patch: operations["update_group_schedule"];
+        trace?: never;
+    };
+    "/api/v1/group_subscription": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Creates a subscription. The subscription price defaults to the clinic
+         *     service price assigned to its group, and its end date defaults to thirty
+         *     days after its start date.
+         * @description # Errors
+         *
+         *     Returns an error for invalid request data, missing clinic records, or
+         *     database errors.
+         */
+        post: operations["create_group_subscription"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/group_subscription/{subscription_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Gets a subscription by its public ID.
+         * @description # Errors
+         *
+         *     Returns an error if the subscription is not in the clinic or a database
+         *     query fails.
+         */
+        get: operations["get_group_subscription"];
+        put?: never;
+        post?: never;
+        /**
+         * Deletes a subscription by its public ID.
+         * @description # Errors
+         *
+         *     Returns an error if the subscription is not in the clinic or the database
+         *     query fails.
+         */
+        delete: operations["delete_group_subscription"];
+        options?: never;
+        head?: never;
+        /**
+         * Updates a subscription by its public ID.
+         * @description # Errors
+         *
+         *     Returns an error for invalid request data, missing clinic records, or
+         *     database errors.
+         */
+        patch: operations["update_group_subscription"];
         trace?: never;
     };
     "/api/v1/media": {
@@ -790,6 +1002,37 @@ export interface paths {
         patch: operations["update_session"];
         trace?: never;
     };
+    "/api/v1/session/{session_id}/pay": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Records a payment for a session and links the payment to that session.
+         * @description The request body uses the same fields and payment detail formats as
+         *     `POST /payment`. The payer must be a patient in the authenticated user's
+         *     clinic, and the session must belong to that clinic. Payment creation and
+         *     session linking happen atomically.
+         *
+         *     # Errors
+         *
+         *     Returns `400` if the session ID or request body is invalid, `401` for an
+         *     invalid authentication session, `403` when the operation is forbidden,
+         *     `404` if the session or payer does not exist in the clinic, `409` if the
+         *     idempotency key or external payment ID was already used, `422` if the
+         *     payment body cannot be deserialized, and `500` on database errors.
+         */
+        post: operations["pay_session"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/sessions/{session_id}/appointment": {
         parameters: {
             query?: never;
@@ -907,8 +1150,8 @@ export interface paths {
          * @description # Errors
          *
          *     Returns `400` if the patient ID is invalid, `401` if the session is
-         *     invalid, `403` if the operation is forbidden, and `500` on database
-         *     errors.
+         *     invalid, `403` if the operation is forbidden, `409` if sessions still use
+         *     the treatment, and `500` on database errors.
          */
         get: operations["get_all_treatments_from_patient"];
         put?: never;
@@ -1181,6 +1424,32 @@ export interface components {
             clinic_id: string;
             owner_id: string;
         };
+        CreateGroupRequest: {
+            clinic_service_id: string;
+            description?: string | null;
+            name: string;
+            schedules?: components["schemas"]["ScheduleInput"][];
+        };
+        CreateGroupSubscriptionRequest: {
+            /**
+             * Format: date
+             * @description Defaults to thirty days after `start_date`.
+             */
+            end_date?: string | null;
+            group_id: string;
+            patient_id: string;
+            payment_id?: string | null;
+            /**
+             * Format: decimal
+             * @description Defaults to the clinic service price assigned to the group.
+             */
+            price?: string | null;
+            /**
+             * Format: date
+             * @description Defaults to the current date.
+             */
+            start_date?: string | null;
+        };
         CreateNoteRequest: {
             content: string;
         };
@@ -1206,12 +1475,25 @@ export interface components {
             service_id: string;
         };
         CreatePaymentRequest: {
-            /** @example 1250.50 */
+            /**
+             * @description Amount paid by the patient.
+             * @example 1250.50
+             */
             amount: string;
+            /** @description Date the payment was made. */
             date: components["schemas"]["Date"];
+            /** @description Payment method and method-specific details. */
             detail: components["schemas"]["PaymentDetail"];
-            /** @description This is key meant to make the handlers avoid repeating the same work done before. For that to happen this has to be a *random* string guaranteed to be unique. */
+            /**
+             * @description Unique key used to safely retry this payment request.
+             *     This is key meant to make the handlers avoid repeating the same work done before. For that to happen this has to be a *random* string guaranteed to be unique.
+             * @example request-01J7K2M4P6Q8R0S2T4V6W8Y0ZA
+             */
             idempotency_key: string;
+            /**
+             * @description Public ID of the patient who made the payment.
+             * @example V1StGXR8_Z
+             */
             payer_id: string;
             /**
              * @description Sessions of the payer this payment covers. Each session can be covered
@@ -1232,6 +1514,9 @@ export interface components {
              * @example 2026-09-01 10:00
              */
             starts: string;
+        };
+        CreateScheduleRequest: components["schemas"]["ScheduleInput"] & {
+            group_id: string;
         };
         CreateServiceRequest: {
             /**
@@ -1293,7 +1578,7 @@ export interface components {
             reason: string;
         };
         /** @enum {string} */
-        ErrorCode: "DuplicateUser" | "DuplicateRequest" | "InvalidId" | "ExpiredSession" | "MissingRow" | "InvalidCredentials" | "ValidationFailed" | "PayloadTooLarge" | "ClinicAlreadyExists" | "ObraSocialAlreadyExists" | "InvalidJson" | "TimeSlotConflict" | "ServiceUnavailable" | "DatabaseError" | "InternalError" | "Opaque";
+        ErrorCode: "DuplicateUser" | "DuplicateRequest" | "InvalidId" | "ExpiredSession" | "MissingRow" | "InvalidCredentials" | "ValidationFailed" | "PayloadTooLarge" | "ClinicAlreadyExists" | "ObraSocialAlreadyExists" | "InvalidJson" | "TimeSlotConflict" | "DeleteRestricted" | "ServiceUnavailable" | "DatabaseError" | "InternalError" | "Opaque";
         ErrorResponse: {
             code: components["schemas"]["ErrorCode"];
             hint?: string | null;
@@ -1301,6 +1586,38 @@ export interface components {
         };
         ForgotPasswordRequest: {
             email: string;
+        };
+        GroupResponse: {
+            clinic_id: string;
+            clinic_service_id?: string | null;
+            description?: string | null;
+            id: string;
+            name: string;
+            schedules: components["schemas"]["GroupScheduleResponse"][];
+        };
+        GroupScheduleResponse: {
+            /** Format: int32 */
+            day_of_week: number;
+            /** Format: time */
+            end_time: string;
+            group_id: string;
+            /** Format: int64 */
+            id: number;
+            /** Format: time */
+            start_time: string;
+        };
+        GroupSubscriptionResponse: {
+            clinic_id: string;
+            /** Format: date */
+            end_date: string;
+            group_id: string;
+            id: string;
+            patient_id: string;
+            payment_id?: string | null;
+            /** Format: decimal */
+            price: string;
+            /** Format: date */
+            start_date: string;
         };
         /** @description An image attached to a treatment, ready to be served to the browser. */
         ImageResponse: {
@@ -1421,6 +1738,14 @@ export interface components {
             /** @enum {string} */
             role: "med_staff";
         });
+        ScheduleInput: {
+            /** Format: int32 */
+            day_of_week: number;
+            /** Format: time */
+            end_time: string;
+            /** Format: time */
+            start_time: string;
+        };
         ServiceResponse: {
             billing_type: components["schemas"]["BillingType"];
             clinic_id: string;
@@ -1528,6 +1853,24 @@ export interface components {
                 start: string;
             };
         };
+        UpdateGroupRequest: {
+            clinic_service_id?: string | null;
+            description?: string | null;
+            name?: string | null;
+            schedules?: components["schemas"]["ScheduleInput"][] | null;
+        };
+        UpdateGroupSubscriptionRequest: {
+            /** Format: date */
+            end_date?: string | null;
+            group_id?: string | null;
+            patient_id?: string | null;
+            /** @description Omit to keep the current payment, or send `null` to clear it. */
+            payment_id?: string | null;
+            /** Format: decimal */
+            price?: string | null;
+            /** Format: date */
+            start_date?: string | null;
+        };
         UpdateImageRequest: {
             /**
              * @description New description of the image, up to 1000 characters. `null` or an empty
@@ -1559,6 +1902,7 @@ export interface components {
         UpdatePaymentRequest: components["schemas"]["CreatePaymentRequest"] & {
             reason: string;
         };
+        UpdateScheduleRequest: components["schemas"]["ScheduleInput"];
         UpdateServiceRequest: {
             description?: string | null;
             name?: string | null;
@@ -2539,6 +2883,16 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
+            /** @description No se puede eliminar el servicio porque tiene registros asociados */
+            409: {
+                headers: {
+                    "x-request-id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
             /** @description Error interno */
             500: {
                 headers: {
@@ -2681,6 +3035,790 @@ export interface operations {
             };
             /** @description No se proporcionó ningún campo para actualizar o alguno no pudo ser interpretado */
             422: {
+                headers: {
+                    "x-request-id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Error interno */
+            500: {
+                headers: {
+                    "x-request-id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    get_all_groups: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GroupResponse"][];
+                };
+            };
+            /** @description La sesión ha expirado o no es válida */
+            401: {
+                headers: {
+                    "x-request-id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description No tiene permiso para realizar esta acción */
+            403: {
+                headers: {
+                    "x-request-id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Error interno */
+            500: {
+                headers: {
+                    "x-request-id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    create_group: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateGroupRequest"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GroupResponse"];
+                };
+            };
+            /** @description El cuerpo de la solicitud tiene un formato incorrecto */
+            400: {
+                headers: {
+                    "x-request-id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description La sesión ha expirado o no es válida */
+            401: {
+                headers: {
+                    "x-request-id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description No tiene permiso para realizar esta acción */
+            403: {
+                headers: {
+                    "x-request-id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Error interno */
+            500: {
+                headers: {
+                    "x-request-id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    get_group: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                group_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GroupResponse"];
+                };
+            };
+            /** @description La sesión ha expirado o no es válida */
+            401: {
+                headers: {
+                    "x-request-id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description No tiene permiso para realizar esta acción */
+            403: {
+                headers: {
+                    "x-request-id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Error interno */
+            500: {
+                headers: {
+                    "x-request-id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    delete_group: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                group_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description La sesión ha expirado o no es válida */
+            401: {
+                headers: {
+                    "x-request-id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description No tiene permiso para realizar esta acción */
+            403: {
+                headers: {
+                    "x-request-id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Error interno */
+            500: {
+                headers: {
+                    "x-request-id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    update_group: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                group_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateGroupRequest"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GroupResponse"];
+                };
+            };
+            /** @description El cuerpo de la solicitud tiene un formato incorrecto */
+            400: {
+                headers: {
+                    "x-request-id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description La sesión ha expirado o no es válida */
+            401: {
+                headers: {
+                    "x-request-id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description No tiene permiso para realizar esta acción */
+            403: {
+                headers: {
+                    "x-request-id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Error interno */
+            500: {
+                headers: {
+                    "x-request-id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    get_all_group_subscriptions: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                group_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GroupSubscriptionResponse"][];
+                };
+            };
+            /** @description La sesión ha expirado o no es válida */
+            401: {
+                headers: {
+                    "x-request-id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description No tiene permiso para realizar esta acción */
+            403: {
+                headers: {
+                    "x-request-id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Error interno */
+            500: {
+                headers: {
+                    "x-request-id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    create_group_schedule: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateScheduleRequest"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GroupScheduleResponse"];
+                };
+            };
+            /** @description El cuerpo de la solicitud tiene un formato incorrecto */
+            400: {
+                headers: {
+                    "x-request-id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description La sesión ha expirado o no es válida */
+            401: {
+                headers: {
+                    "x-request-id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description No tiene permiso para realizar esta acción */
+            403: {
+                headers: {
+                    "x-request-id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Error interno */
+            500: {
+                headers: {
+                    "x-request-id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    get_group_schedule: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                schedule_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GroupScheduleResponse"];
+                };
+            };
+            /** @description La sesión ha expirado o no es válida */
+            401: {
+                headers: {
+                    "x-request-id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description No tiene permiso para realizar esta acción */
+            403: {
+                headers: {
+                    "x-request-id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Error interno */
+            500: {
+                headers: {
+                    "x-request-id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    delete_group_schedule: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                schedule_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description La sesión ha expirado o no es válida */
+            401: {
+                headers: {
+                    "x-request-id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description No tiene permiso para realizar esta acción */
+            403: {
+                headers: {
+                    "x-request-id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Error interno */
+            500: {
+                headers: {
+                    "x-request-id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    update_group_schedule: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                schedule_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateScheduleRequest"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GroupScheduleResponse"];
+                };
+            };
+            /** @description El cuerpo de la solicitud tiene un formato incorrecto */
+            400: {
+                headers: {
+                    "x-request-id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description La sesión ha expirado o no es válida */
+            401: {
+                headers: {
+                    "x-request-id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description No tiene permiso para realizar esta acción */
+            403: {
+                headers: {
+                    "x-request-id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Error interno */
+            500: {
+                headers: {
+                    "x-request-id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    create_group_subscription: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateGroupSubscriptionRequest"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GroupSubscriptionResponse"];
+                };
+            };
+            /** @description El cuerpo de la solicitud tiene un formato incorrecto */
+            400: {
+                headers: {
+                    "x-request-id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description La sesión ha expirado o no es válida */
+            401: {
+                headers: {
+                    "x-request-id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description No tiene permiso para realizar esta acción */
+            403: {
+                headers: {
+                    "x-request-id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Error interno */
+            500: {
+                headers: {
+                    "x-request-id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    get_group_subscription: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                subscription_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GroupSubscriptionResponse"];
+                };
+            };
+            /** @description La sesión ha expirado o no es válida */
+            401: {
+                headers: {
+                    "x-request-id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description No tiene permiso para realizar esta acción */
+            403: {
+                headers: {
+                    "x-request-id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Error interno */
+            500: {
+                headers: {
+                    "x-request-id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    delete_group_subscription: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                subscription_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description La sesión ha expirado o no es válida */
+            401: {
+                headers: {
+                    "x-request-id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description No tiene permiso para realizar esta acción */
+            403: {
+                headers: {
+                    "x-request-id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Error interno */
+            500: {
+                headers: {
+                    "x-request-id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    update_group_subscription: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                subscription_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateGroupSubscriptionRequest"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GroupSubscriptionResponse"];
+                };
+            };
+            /** @description El cuerpo de la solicitud tiene un formato incorrecto */
+            400: {
+                headers: {
+                    "x-request-id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description La sesión ha expirado o no es válida */
+            401: {
+                headers: {
+                    "x-request-id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description No tiene permiso para realizar esta acción */
+            403: {
                 headers: {
                     "x-request-id"?: string;
                     [name: string]: unknown;
@@ -4610,6 +5748,107 @@ export interface operations {
             };
         };
     };
+    pay_session: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /**
+                 * @description Public ID of the session to pay
+                 * @example V1StGXR8_Z
+                 */
+                session_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreatePaymentRequest"];
+            };
+        };
+        responses: {
+            /** @description Session payment recorded */
+            201: {
+                headers: {
+                    "x-request-id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PaymentResponse"];
+                };
+            };
+            /** @description El cuerpo de la solicitud tiene un formato incorrecto */
+            400: {
+                headers: {
+                    "x-request-id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description La sesión ha expirado o no es válida */
+            401: {
+                headers: {
+                    "x-request-id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description No tiene permiso para realizar esta acción */
+            403: {
+                headers: {
+                    "x-request-id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description No se encontró el registro relacionado */
+            404: {
+                headers: {
+                    "x-request-id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Solicitud duplicada */
+            409: {
+                headers: {
+                    "x-request-id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description No fue posible interpretar los datos del pago */
+            422: {
+                headers: {
+                    "x-request-id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Error interno */
+            500: {
+                headers: {
+                    "x-request-id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
     create_appointment: {
         parameters: {
             query?: never;
@@ -5190,6 +6429,16 @@ export interface operations {
             };
             /** @description No tiene permiso para realizar esta acción */
             403: {
+                headers: {
+                    "x-request-id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description No se puede eliminar el tratamiento porque tiene sesiones asociadas */
+            409: {
                 headers: {
                     "x-request-id"?: string;
                     [name: string]: unknown;
