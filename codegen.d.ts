@@ -1432,6 +1432,11 @@ export interface components {
         };
         CreateGroupSubscriptionRequest: {
             /**
+             * @description Whether the next period is generated automatically once this one
+             *     expires. Defaults to `true`.
+             */
+            auto_renew?: boolean | null;
+            /**
              * Format: date
              * @description Defaults to thirty days after `start_date`.
              */
@@ -1598,15 +1603,29 @@ export interface components {
         GroupScheduleResponse: {
             /** Format: int32 */
             day_of_week: number;
-            /** Format: time */
+            /**
+             * Format: time
+             * @description `HH:MM:SS`.
+             * @example 10:00:00
+             */
             end_time: string;
             group_id: string;
             /** Format: int64 */
             id: number;
-            /** Format: time */
+            /**
+             * Format: time
+             * @description `HH:MM:SS`.
+             * @example 09:00:00
+             */
             start_time: string;
         };
         GroupSubscriptionResponse: {
+            /**
+             * @description Whether the next period is generated automatically once this one
+             *     expires. Only the most recent subscription of a patient in a group is
+             *     taken into account.
+             */
+            auto_renew: boolean;
             clinic_id: string;
             /** Format: date */
             end_date: string;
@@ -1741,9 +1760,17 @@ export interface components {
         ScheduleInput: {
             /** Format: int32 */
             day_of_week: number;
-            /** Format: time */
+            /**
+             * Format: time
+             * @description `HH:MM` or `HH:MM:SS`.
+             * @example 10:00
+             */
             end_time: string;
-            /** Format: time */
+            /**
+             * Format: time
+             * @description `HH:MM` or `HH:MM:SS`.
+             * @example 09:00
+             */
             start_time: string;
         };
         ServiceResponse: {
@@ -1860,6 +1887,11 @@ export interface components {
             schedules?: components["schemas"]["ScheduleInput"][] | null;
         };
         UpdateGroupSubscriptionRequest: {
+            /**
+             * @description Send `false` on the most recent subscription to stop generating new
+             *     periods, or `true` to resume them.
+             */
+            auto_renew?: boolean | null;
             /** Format: date */
             end_date?: string | null;
             group_id?: string | null;
