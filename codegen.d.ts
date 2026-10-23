@@ -756,7 +756,8 @@ export interface paths {
          *
          *     Returns `400` for a malformed request body, `401` for an invalid session,
          *     `403` when the operation is forbidden, `404` if a related row does not
-         *     exist, `422` when a required field is missing, and `500` on internal errors.
+         *     exist, `409` if a patient with that DNI already exists in the clinic,
+         *     `422` when a required field is missing, and `500` on internal errors.
          */
         post: operations["create_patient"];
         delete?: never;
@@ -792,7 +793,8 @@ export interface paths {
          *
          *     Returns `400` if the body or patient ID is invalid, `401` if the session
          *     is invalid, `403` if the operation is forbidden, `404` if the patient does
-         *     not exist, `422` if nothing to update was provided, and `500` on database
+         *     not exist, `409` if the new DNI already belongs to another patient in the
+         *     clinic, `422` if nothing to update was provided, and `500` on database
          *     errors.
          */
         patch: operations["update_patient"];
@@ -1464,20 +1466,21 @@ export interface components {
             surcharge: string;
         };
         CreatePatientRequest: {
-            address: string;
-            birth_date: components["schemas"]["Date"];
-            dni: string;
+            address?: string | null;
+            birth_date?: null | components["schemas"]["Date"];
+            dni?: string | null;
             /** Format: int64 */
             id_obra_social?: number | null;
-            motive: string;
+            motive?: string | null;
             name: string;
             /** Format: int64 */
             num_afiliado?: number | null;
             /** Format: int32 */
             num_sessions?: number | null;
-            occupation: string;
-            phone: string;
-            service_id: string;
+            occupation?: string | null;
+            phone?: string | null;
+            /** @description Without a service no treatment is created. */
+            service_id?: string | null;
         };
         CreatePaymentRequest: {
             /**
@@ -1583,7 +1586,7 @@ export interface components {
             reason: string;
         };
         /** @enum {string} */
-        ErrorCode: "DuplicateUser" | "DuplicateRequest" | "InvalidId" | "ExpiredSession" | "MissingRow" | "InvalidCredentials" | "ValidationFailed" | "PayloadTooLarge" | "ClinicAlreadyExists" | "ObraSocialAlreadyExists" | "InvalidJson" | "TimeSlotConflict" | "DeleteRestricted" | "ServiceUnavailable" | "DatabaseError" | "InternalError" | "Opaque";
+        ErrorCode: "DuplicateUser" | "DuplicatePatientDni" | "DuplicateRequest" | "InvalidId" | "ExpiredSession" | "MissingRow" | "InvalidCredentials" | "ValidationFailed" | "PayloadTooLarge" | "ClinicAlreadyExists" | "ObraSocialAlreadyExists" | "InvalidJson" | "TimeSlotConflict" | "DeleteRestricted" | "ServiceUnavailable" | "DatabaseError" | "InternalError" | "Opaque";
         ErrorResponse: {
             code: components["schemas"]["ErrorCode"];
             hint?: string | null;
@@ -1699,17 +1702,17 @@ export interface components {
          *     [`Appointment`]'s JSON, so the field names are the wire keys.
          */
         PatientData: {
-            patient_dni: string;
+            patient_dni?: string | null;
             patient_id: components["schemas"]["PatientId"];
             patient_name: string;
         };
         PatientId: string;
         PatientResponse: {
-            address: string;
+            address?: string | null;
             /** Format: int32 */
-            age: number;
-            birth_date: components["schemas"]["Date"];
-            dni: string;
+            age?: number | null;
+            birth_date?: null | components["schemas"]["Date"];
+            dni?: string | null;
             id: string;
             /** Format: int64 */
             id_obra_social?: number | null;
@@ -1717,8 +1720,8 @@ export interface components {
             nombre_obra_social?: string | null;
             /** Format: int64 */
             num_afiliado?: number | null;
-            occupation: string;
-            phone: string;
+            occupation?: string | null;
+            phone?: string | null;
             status: components["schemas"]["PatientStatus"];
         };
         /** @enum {string} */
@@ -4775,6 +4778,16 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
+            /** @description Ya existe un paciente con ese DNI en esta clínica */
+            409: {
+                headers: {
+                    "x-request-id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
             /** @description Error interno */
             500: {
                 headers: {
@@ -4919,6 +4932,16 @@ export interface operations {
             };
             /** @description No se encontró el paciente */
             404: {
+                headers: {
+                    "x-request-id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Ya existe un paciente con ese DNI en esta clínica */
+            409: {
                 headers: {
                     "x-request-id"?: string;
                     [name: string]: unknown;
