@@ -158,7 +158,7 @@ export interface paths {
         get?: never;
         put?: never;
         /**
-         * Authenticates a user and returns a new session token.
+         * Authenticates a user and sets a new session token in an `HttpOnly` cookie.
          * @description # Errors
          *
          *     Returns `400` if the request body is malformed, `401` if the credentials
@@ -1391,8 +1391,6 @@ export interface components {
             status: components["schemas"]["Status"];
         };
         AppointmentId: string;
-        /** @description It's the token that represents a valid session for a given user. */
-        AuthToken: string;
         /**
          * @description How the price of a clinic service is charged.
          *
@@ -1679,7 +1677,6 @@ export interface components {
             file: string;
         };
         LoginResponse: {
-            auth_token: components["schemas"]["AuthToken"];
             clinic_name: string;
             id: components["schemas"]["UserId"];
         };
@@ -2421,6 +2418,7 @@ export interface operations {
             /** @description Login successful */
             200: {
                 headers: {
+                    "set-cookie"?: string;
                     "x-request-id"?: string;
                     [name: string]: unknown;
                 };
@@ -2472,6 +2470,7 @@ export interface operations {
             /** @description Logged out successfully */
             204: {
                 headers: {
+                    "set-cookie"?: string;
                     "x-request-id"?: string;
                     [name: string]: unknown;
                 };

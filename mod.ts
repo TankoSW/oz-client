@@ -79,9 +79,6 @@ export type Appointment = components["schemas"]["Appointment"];
 /** OpenAPI schema `AppointmentId`. */
 export type AppointmentId = components["schemas"]["AppointmentId"];
 
-/** OpenAPI schema `AuthToken`. */
-export type AuthToken = components["schemas"]["AuthToken"];
-
 /** OpenAPI schema `BillingType`. */
 export type BillingType = components["schemas"]["BillingType"];
 
