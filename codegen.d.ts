@@ -800,6 +800,33 @@ export interface paths {
         patch: operations["update_patient"];
         trace?: never;
     };
+    "/api/v1/patient/{patient_id}/appointments": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Lists a patient's appointments with the complete details of each linked session.
+         * @description Results are ordered by appointment start date. Sessions without appointments
+         *     are omitted.
+         *
+         *     # Errors
+         *
+         *     Returns `400` if the patient ID is invalid, `401` if the session is
+         *     invalid, `403` if the operation is forbidden, `404` if the patient does
+         *     not exist in the clinic, and `500` on database errors.
+         */
+        get: operations["get_patient_appointments"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/patient/{patient_id}/clinical-history": {
         parameters: {
             query?: never;
@@ -1227,6 +1254,26 @@ export interface paths {
         patch: operations["update_treatment"];
         trace?: never;
     };
+    "/api/v1/treatment/{treatment_id}/appointment": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Create and schedule the next treatment session
+         * @description Creates the next session for the treatment using its configured service, then schedules an appointment for that session. Session creation and appointment scheduling are atomic: a duplicate request or time conflict leaves no extra session. The treatment session count increases when the new session number exceeds the planned count.
+         */
+        post: operations["create_treatment_appointment"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/treatment/{treatment_id}/media": {
         parameters: {
             query?: never;
@@ -1509,14 +1556,19 @@ export interface components {
         };
         CreateRequest: {
             /**
-             * @description "End date time in a format accepted by `PostgreSQL`"
+             * @description Appointment end in `YYYY-MM-DD HH:MM` format, interpreted in UTC-03:00.
+             *     Must be later than `starts`.
              * @example 2026-09-01 11:00
              */
             ends: string;
-            /** @description This is key meant to make the handlers avoid repeating the same work done before. For that to happen this has to be a *random* string guaranteed to be unique. */
+            /**
+             * @description Unique key used to prevent duplicate appointments when a request is
+             *     retried. Reuse the same key when retrying the same request.
+             * @example appt-01J7R4M8Q2
+             */
             idempotency_key: string;
             /**
-             * @description "Start date time in a format accepted by `PostgreSQL`"
+             * @description Appointment start in `YYYY-MM-DD HH:MM` format, interpreted in UTC-03:00.
              * @example 2026-09-01 10:00
              */
             starts: string;
@@ -4971,6 +5023,80 @@ export interface operations {
             };
         };
     };
+    get_patient_appointments: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Patient ID */
+                patient_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Patient appointments with their session details, ordered by appointment date */
+            200: {
+                headers: {
+                    "x-request-id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SessionResponse"][];
+                };
+            };
+            /** @description El ID proporcionado no es válido */
+            400: {
+                headers: {
+                    "x-request-id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description La sesión ha expirado o no es válida */
+            401: {
+                headers: {
+                    "x-request-id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description No tiene permiso para realizar esta acción */
+            403: {
+                headers: {
+                    "x-request-id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Patient not found in this clinic */
+            404: {
+                headers: {
+                    "x-request-id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Error interno */
+            500: {
+                headers: {
+                    "x-request-id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
     build_clinic_history: {
         parameters: {
             query?: never;
@@ -6561,6 +6687,98 @@ export interface operations {
             };
             /** @description No tiene permiso para realizar esta acción */
             403: {
+                headers: {
+                    "x-request-id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Error interno */
+            500: {
+                headers: {
+                    "x-request-id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    create_treatment_appointment: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /**
+                 * @description Public ID of the treatment to create the next session for
+                 * @example V1StGXR8_Z
+                 */
+                treatment_id: string;
+            };
+            cookie?: never;
+        };
+        /** @description Appointment idempotency key and local start/end times. */
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateRequest"];
+            };
+        };
+        responses: {
+            /** @description The session was created and its appointment was scheduled */
+            201: {
+                headers: {
+                    "x-request-id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Appointment"];
+                };
+            };
+            /** @description El cuerpo de la solicitud tiene un formato incorrecto */
+            400: {
+                headers: {
+                    "x-request-id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description La sesión ha expirado o no es válida */
+            401: {
+                headers: {
+                    "x-request-id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description No tiene permiso para realizar esta acción */
+            403: {
+                headers: {
+                    "x-request-id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description The treatment or authenticated appointment creator was not found in this clinic */
+            404: {
+                headers: {
+                    "x-request-id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description The requested time overlaps another appointment, or the idempotency key was already used */
+            409: {
                 headers: {
                     "x-request-id"?: string;
                     [name: string]: unknown;

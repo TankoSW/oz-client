@@ -409,6 +409,8 @@ export interface OzClient {
     getById: (body: OzRequestOptions<operations["get_patient"]>) => ReturnType<ClientForPath<paths["/api/v1/patient/{patient_id}"], "application/json">["GET"]>;
     /** Calls PATCH /api/v1/patient/{patient_id}. Per-call lifecycle callbacks override the client defaults. */
     updatePatient: (body: OzRequestOptions<operations["update_patient"]>) => ReturnType<ClientForPath<paths["/api/v1/patient/{patient_id}"], "application/json">["PATCH"]>;
+    /** Calls GET /api/v1/patient/{patient_id}/appointments. Per-call lifecycle callbacks override the client defaults. */
+    getPatientAppointments: (body: OzRequestOptions<operations["get_patient_appointments"]>) => ReturnType<ClientForPath<paths["/api/v1/patient/{patient_id}/appointments"], "application/json">["GET"]>;
     /** Calls GET /api/v1/patient/{patient_id}/clinical-history. Per-call lifecycle callbacks override the client defaults. */
     buildClinicHistory: (body: OzRequestOptions<operations["build_clinic_history"]>) => ReturnType<ClientForPath<paths["/api/v1/patient/{patient_id}/clinical-history"], "application/json">["GET"]>;
     /** Calls PATCH /api/v1/patient/{patient_id}/discharge. Per-call lifecycle callbacks override the client defaults. */
@@ -463,6 +465,8 @@ export interface OzClient {
     getById: (body: OzRequestOptions<operations["get_treatment"]>) => ReturnType<ClientForPath<paths["/api/v1/treatment/{treatment_id}"], "application/json">["GET"]>;
     /** Calls PATCH /api/v1/treatment/{treatment_id}. Per-call lifecycle callbacks override the client defaults. */
     updateTreatment: (body: OzRequestOptions<operations["update_treatment"]>) => ReturnType<ClientForPath<paths["/api/v1/treatment/{treatment_id}"], "application/json">["PATCH"]>;
+    /** Calls POST /api/v1/treatment/{treatment_id}/appointment. Per-call lifecycle callbacks override the client defaults. */
+    createTreatmentAppointment: (body: OzRequestOptions<operations["create_treatment_appointment"]>) => ReturnType<ClientForPath<paths["/api/v1/treatment/{treatment_id}/appointment"], "application/json">["POST"]>;
     /** Calls GET /api/v1/treatment/{treatment_id}/media. Per-call lifecycle callbacks override the client defaults. */
     getAllImagesInTreatment: (body: OzRequestOptions<operations["get_all_images_in_treatment"]>) => ReturnType<ClientForPath<paths["/api/v1/treatment/{treatment_id}/media"], "application/json">["GET"]>;
     /** Calls GET /api/v1/treatment/{treatment_id}/notes. Per-call lifecycle callbacks override the client defaults. */
@@ -612,6 +616,8 @@ export function createOzClient(options: OzClientOptions): OzClient {
       getById: (body: OzRequestOptions<operations["get_patient"]>) => raw_client.GET("/api/v1/patient/{patient_id}", withCallbacks(body, defaults)),
       /** Calls PATCH /api/v1/patient/{patient_id}. Per-call lifecycle callbacks override the client defaults. */
       updatePatient: (body: OzRequestOptions<operations["update_patient"]>) => raw_client.PATCH("/api/v1/patient/{patient_id}", withCallbacks(body, defaults)),
+      /** Calls GET /api/v1/patient/{patient_id}/appointments. Per-call lifecycle callbacks override the client defaults. */
+      getPatientAppointments: (body: OzRequestOptions<operations["get_patient_appointments"]>) => raw_client.GET("/api/v1/patient/{patient_id}/appointments", withCallbacks(body, defaults)),
       /** Calls GET /api/v1/patient/{patient_id}/clinical-history. Per-call lifecycle callbacks override the client defaults. */
       buildClinicHistory: (body: OzRequestOptions<operations["build_clinic_history"]>) => raw_client.GET("/api/v1/patient/{patient_id}/clinical-history", withCallbacks(body, defaults)),
       /** Calls PATCH /api/v1/patient/{patient_id}/discharge. Per-call lifecycle callbacks override the client defaults. */
@@ -666,6 +672,8 @@ export function createOzClient(options: OzClientOptions): OzClient {
       getById: (body: OzRequestOptions<operations["get_treatment"]>) => raw_client.GET("/api/v1/treatment/{treatment_id}", withCallbacks(body, defaults)),
       /** Calls PATCH /api/v1/treatment/{treatment_id}. Per-call lifecycle callbacks override the client defaults. */
       updateTreatment: (body: OzRequestOptions<operations["update_treatment"]>) => raw_client.PATCH("/api/v1/treatment/{treatment_id}", withCallbacks(body, defaults)),
+      /** Calls POST /api/v1/treatment/{treatment_id}/appointment. Per-call lifecycle callbacks override the client defaults. */
+      createTreatmentAppointment: (body: OzRequestOptions<operations["create_treatment_appointment"]>) => raw_client.POST("/api/v1/treatment/{treatment_id}/appointment", withCallbacks(body, defaults)),
       /** Calls GET /api/v1/treatment/{treatment_id}/media. Per-call lifecycle callbacks override the client defaults. */
       getAllImagesInTreatment: (body: OzRequestOptions<operations["get_all_images_in_treatment"]>) => raw_client.GET("/api/v1/treatment/{treatment_id}/media", withCallbacks(body, defaults)),
       /** Calls GET /api/v1/treatment/{treatment_id}/notes. Per-call lifecycle callbacks override the client defaults. */
