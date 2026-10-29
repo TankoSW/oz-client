@@ -97,6 +97,9 @@ export type CreateClinicRequest = components["schemas"]["CreateClinicRequest"];
 /** OpenAPI schema `CreateClinicResponse`. */
 export type CreateClinicResponse = components["schemas"]["CreateClinicResponse"];
 
+/** OpenAPI schema `CreateForTreatmentRequest`. */
+export type CreateForTreatmentRequest = components["schemas"]["CreateForTreatmentRequest"];
+
 /** OpenAPI schema `CreateGroupRequest`. */
 export type CreateGroupRequest = components["schemas"]["CreateGroupRequest"];
 
@@ -108,6 +111,9 @@ export type CreateNoteRequest = components["schemas"]["CreateNoteRequest"];
 
 /** OpenAPI schema `CreateObraSocialRequest`. */
 export type CreateObraSocialRequest = components["schemas"]["CreateObraSocialRequest"];
+
+/** OpenAPI schema `CreatePackageRequest`. */
+export type CreatePackageRequest = components["schemas"]["CreatePackageRequest"];
 
 /** OpenAPI schema `CreatePatientRequest`. */
 export type CreatePatientRequest = components["schemas"]["CreatePatientRequest"];
@@ -196,11 +202,23 @@ export type PaymentMethod = components["schemas"]["PaymentMethod"];
 /** OpenAPI schema `PaymentResponse`. */
 export type PaymentResponse = components["schemas"]["PaymentResponse"];
 
+/** OpenAPI schema `Quote`. */
+export type Quote = components["schemas"]["Quote"];
+
+/** OpenAPI schema `QuoteRequest`. */
+export type QuoteRequest = components["schemas"]["QuoteRequest"];
+
+/** OpenAPI schema `QuotedSession`. */
+export type QuotedSession = components["schemas"]["QuotedSession"];
+
 /** OpenAPI schema `RoleData`. */
 export type RoleData = components["schemas"]["RoleData"];
 
 /** OpenAPI schema `ScheduleInput`. */
 export type ScheduleInput = components["schemas"]["ScheduleInput"];
+
+/** OpenAPI schema `ServicePackageResponse`. */
+export type ServicePackageResponse = components["schemas"]["ServicePackageResponse"];
 
 /** OpenAPI schema `ServiceResponse`. */
 export type ServiceResponse = components["schemas"]["ServiceResponse"];
@@ -250,6 +268,9 @@ export type UpdateNoteRequest = components["schemas"]["UpdateNoteRequest"];
 /** OpenAPI schema `UpdateObraSocialRequest`. */
 export type UpdateObraSocialRequest = components["schemas"]["UpdateObraSocialRequest"];
 
+/** OpenAPI schema `UpdatePackageRequest`. */
+export type UpdatePackageRequest = components["schemas"]["UpdatePackageRequest"];
+
 /** OpenAPI schema `UpdatePatientRequest`. */
 export type UpdatePatientRequest = components["schemas"]["UpdatePatientRequest"];
 
@@ -261,6 +282,9 @@ export type UpdateScheduleRequest = components["schemas"]["UpdateScheduleRequest
 
 /** OpenAPI schema `UpdateServiceRequest`. */
 export type UpdateServiceRequest = components["schemas"]["UpdateServiceRequest"];
+
+/** OpenAPI schema `UpdateSessionPriceRequest`. */
+export type UpdateSessionPriceRequest = components["schemas"]["UpdateSessionPriceRequest"];
 
 /** OpenAPI schema `UpdateSessionRequest`. */
 export type UpdateSessionRequest = components["schemas"]["UpdateSessionRequest"];
@@ -337,6 +361,14 @@ export interface OzClient {
     getClinicService: (body: OzRequestOptions<operations["get_clinic_service"]>) => ReturnType<ClientForPath<paths["/api/v1/clinic_service/{service_id}"], "application/json">["GET"]>;
     /** Calls PATCH /api/v1/clinic_service/{service_id}. Per-call lifecycle callbacks override the client defaults. */
     updateClinicService: (body: OzRequestOptions<operations["update_clinic_service"]>) => ReturnType<ClientForPath<paths["/api/v1/clinic_service/{service_id}"], "application/json">["PATCH"]>;
+    /** Calls GET /api/v1/clinic_service/{service_id}/packages. Per-call lifecycle callbacks override the client defaults. */
+    getAllServicePackages: (body: OzRequestOptions<operations["get_all_service_packages"]>) => ReturnType<ClientForPath<paths["/api/v1/clinic_service/{service_id}/packages"], "application/json">["GET"]>;
+    /** Calls POST /api/v1/clinic_service/{service_id}/packages. Per-call lifecycle callbacks override the client defaults. */
+    createServicePackage: (body: OzRequestOptions<operations["create_service_package"]>) => ReturnType<ClientForPath<paths["/api/v1/clinic_service/{service_id}/packages"], "application/json">["POST"]>;
+    /** Calls DELETE /api/v1/clinic_service/{service_id}/packages/{package_id}. Per-call lifecycle callbacks override the client defaults. */
+    deleteServicePackage: (body: OzRequestOptions<operations["delete_service_package"]>) => ReturnType<ClientForPath<paths["/api/v1/clinic_service/{service_id}/packages/{package_id}"], "application/json">["DELETE"]>;
+    /** Calls PATCH /api/v1/clinic_service/{service_id}/packages/{package_id}. Per-call lifecycle callbacks override the client defaults. */
+    updateServicePackage: (body: OzRequestOptions<operations["update_service_package"]>) => ReturnType<ClientForPath<paths["/api/v1/clinic_service/{service_id}/packages/{package_id}"], "application/json">["PATCH"]>;
   };
   group: {
     /** Calls GET /api/v1/group. Per-call lifecycle callbacks override the client defaults. */
@@ -433,12 +465,16 @@ export interface OzClient {
   session: {
     /** Calls POST /api/v1/session. Per-call lifecycle callbacks override the client defaults. */
     createSession: (body: OzRequestOptions<operations["create_session"]>) => ReturnType<ClientForPath<paths["/api/v1/session"], "application/json">["POST"]>;
+    /** Calls POST /api/v1/session/quote. Per-call lifecycle callbacks override the client defaults. */
+    quoteSessions: (body: OzRequestOptions<operations["quote_sessions"]>) => ReturnType<ClientForPath<paths["/api/v1/session/quote"], "application/json">["POST"]>;
     /** Calls GET /api/v1/session/{session_id}. Per-call lifecycle callbacks override the client defaults. */
     getById: (body: OzRequestOptions<operations["get_session"]>) => ReturnType<ClientForPath<paths["/api/v1/session/{session_id}"], "application/json">["GET"]>;
     /** Calls PATCH /api/v1/session/{session_id}. Per-call lifecycle callbacks override the client defaults. */
     updateSession: (body: OzRequestOptions<operations["update_session"]>) => ReturnType<ClientForPath<paths["/api/v1/session/{session_id}"], "application/json">["PATCH"]>;
     /** Calls POST /api/v1/session/{session_id}/pay. Per-call lifecycle callbacks override the client defaults. */
     paySession: (body: OzRequestOptions<operations["pay_session"]>) => ReturnType<ClientForPath<paths["/api/v1/session/{session_id}/pay"], "application/json">["POST"]>;
+    /** Calls PATCH /api/v1/session/{session_id}/price. Per-call lifecycle callbacks override the client defaults. */
+    updateSessionPrice: (body: OzRequestOptions<operations["update_session_price"]>) => ReturnType<ClientForPath<paths["/api/v1/session/{session_id}/price"], "application/json">["PATCH"]>;
   };
   sessions: {
     /** Calls POST /api/v1/sessions/{session_id}/appointment. Per-call lifecycle callbacks override the client defaults. */
@@ -544,6 +580,14 @@ export function createOzClient(options: OzClientOptions): OzClient {
       getClinicService: (body: OzRequestOptions<operations["get_clinic_service"]>) => raw_client.GET("/api/v1/clinic_service/{service_id}", withCallbacks(body, defaults)),
       /** Calls PATCH /api/v1/clinic_service/{service_id}. Per-call lifecycle callbacks override the client defaults. */
       updateClinicService: (body: OzRequestOptions<operations["update_clinic_service"]>) => raw_client.PATCH("/api/v1/clinic_service/{service_id}", withCallbacks(body, defaults)),
+      /** Calls GET /api/v1/clinic_service/{service_id}/packages. Per-call lifecycle callbacks override the client defaults. */
+      getAllServicePackages: (body: OzRequestOptions<operations["get_all_service_packages"]>) => raw_client.GET("/api/v1/clinic_service/{service_id}/packages", withCallbacks(body, defaults)),
+      /** Calls POST /api/v1/clinic_service/{service_id}/packages. Per-call lifecycle callbacks override the client defaults. */
+      createServicePackage: (body: OzRequestOptions<operations["create_service_package"]>) => raw_client.POST("/api/v1/clinic_service/{service_id}/packages", withCallbacks(body, defaults)),
+      /** Calls DELETE /api/v1/clinic_service/{service_id}/packages/{package_id}. Per-call lifecycle callbacks override the client defaults. */
+      deleteServicePackage: (body: OzRequestOptions<operations["delete_service_package"]>) => raw_client.DELETE("/api/v1/clinic_service/{service_id}/packages/{package_id}", withCallbacks(body, defaults)),
+      /** Calls PATCH /api/v1/clinic_service/{service_id}/packages/{package_id}. Per-call lifecycle callbacks override the client defaults. */
+      updateServicePackage: (body: OzRequestOptions<operations["update_service_package"]>) => raw_client.PATCH("/api/v1/clinic_service/{service_id}/packages/{package_id}", withCallbacks(body, defaults)),
       },
     group: {
       /** Calls GET /api/v1/group. Per-call lifecycle callbacks override the client defaults. */
@@ -640,12 +684,16 @@ export function createOzClient(options: OzClientOptions): OzClient {
     session: {
       /** Calls POST /api/v1/session. Per-call lifecycle callbacks override the client defaults. */
       createSession: (body: OzRequestOptions<operations["create_session"]>) => raw_client.POST("/api/v1/session", withCallbacks(body, defaults)),
+      /** Calls POST /api/v1/session/quote. Per-call lifecycle callbacks override the client defaults. */
+      quoteSessions: (body: OzRequestOptions<operations["quote_sessions"]>) => raw_client.POST("/api/v1/session/quote", withCallbacks(body, defaults)),
       /** Calls GET /api/v1/session/{session_id}. Per-call lifecycle callbacks override the client defaults. */
       getById: (body: OzRequestOptions<operations["get_session"]>) => raw_client.GET("/api/v1/session/{session_id}", withCallbacks(body, defaults)),
       /** Calls PATCH /api/v1/session/{session_id}. Per-call lifecycle callbacks override the client defaults. */
       updateSession: (body: OzRequestOptions<operations["update_session"]>) => raw_client.PATCH("/api/v1/session/{session_id}", withCallbacks(body, defaults)),
       /** Calls POST /api/v1/session/{session_id}/pay. Per-call lifecycle callbacks override the client defaults. */
       paySession: (body: OzRequestOptions<operations["pay_session"]>) => raw_client.POST("/api/v1/session/{session_id}/pay", withCallbacks(body, defaults)),
+      /** Calls PATCH /api/v1/session/{session_id}/price. Per-call lifecycle callbacks override the client defaults. */
+      updateSessionPrice: (body: OzRequestOptions<operations["update_session_price"]>) => raw_client.PATCH("/api/v1/session/{session_id}/price", withCallbacks(body, defaults)),
       },
     sessions: {
       /** Calls POST /api/v1/sessions/{session_id}/appointment. Per-call lifecycle callbacks override the client defaults. */

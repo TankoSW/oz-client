@@ -351,6 +351,75 @@ export interface paths {
         patch: operations["update_clinic_service"];
         trace?: never;
     };
+    "/api/v1/clinic_service/{service_id}/packages": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Lists the packages of a clinic service, ordered by `min_sessions`.
+         * @description # Errors
+         *
+         *     Returns `400` for an invalid ID, `401` for an invalid session, `403` when
+         *     the operation is forbidden, and `500` on database errors.
+         */
+        get: operations["get_all_service_packages"];
+        put?: never;
+        /**
+         * Creates a package for a clinic service charged per session.
+         * @description When `min_sessions` or more sessions of the service are paid together,
+         *     each one costs the package price.
+         *
+         *     # Errors
+         *
+         *     Returns `400` for a malformed body, fewer than 2 sessions, a non-positive
+         *     price, a monthly service or a repeated `min_sessions`, `401` for an
+         *     invalid session, `403` when the operation is forbidden, `404` if the
+         *     service does not exist, and `500` on database errors.
+         */
+        post: operations["create_service_package"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/clinic_service/{service_id}/packages/{package_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /**
+         * Deletes a package of a clinic service. Sessions already paid with it keep
+         *     the price they were paid with.
+         * @description # Errors
+         *
+         *     Returns `400` for an invalid ID, `401` for an invalid session, `403` when
+         *     the operation is forbidden, `404` if the package does not exist, and
+         *     `500` on database errors.
+         */
+        delete: operations["delete_service_package"];
+        options?: never;
+        head?: never;
+        /**
+         * Updates a package of a clinic service. Sessions already paid with it keep
+         *     the price they were paid with.
+         * @description # Errors
+         *
+         *     Returns `400` for a malformed body or invalid values, `401` for an invalid
+         *     session, `403` when the operation is forbidden, `404` if the package does
+         *     not exist, `422` if no field is sent, and `500` on database errors.
+         */
+        patch: operations["update_service_package"];
+        trace?: never;
+    };
     "/api/v1/group": {
         parameters: {
             query?: never;
@@ -572,7 +641,7 @@ export interface paths {
         get?: never;
         put?: never;
         /**
-         * Uploads and attaches an image to a treatment in the current user's clinic.
+         * Uploads and attaches an image or PDF to a treatment in the current user's clinic.
          * @description # Errors
          *
          *     Returns an error when the name or multipart file is missing, the image is
@@ -988,11 +1057,41 @@ export interface paths {
          *
          *     Returns `400` if the request body is malformed, if neither `cost` nor
          *     `service_id` is given, or if the service is not charged per session, `401`
-         *     for an invalid session, `403` when the operation is forbidden, `404` if a
+         *     for an invalid session, `403` when the operation is forbidden (including a
+         *     professional sending `cost`), `404` if a
          *     related row (including the service) does not exist, and `500` on internal
          *     errors.
          */
         post: operations["create_session"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/session/quote": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Prices unpaid sessions of one patient as if paid together.
+         * @description Applies the packages of their services (for example, five sessions paid
+         *     together at a lower price each) and adds the obra social plus. Nothing is
+         *     stored: paying the same sessions in one payment applies the same prices.
+         *
+         *     # Errors
+         *
+         *     Returns `400` if an ID is invalid, a session is already paid or the
+         *     sessions belong to different patients, `401` for an invalid
+         *     authentication session, `403` when the operation is forbidden, `404` if a
+         *     session does not exist, and `500` on database errors.
+         */
+        post: operations["quote_sessions"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1060,6 +1159,34 @@ export interface paths {
         options?: never;
         head?: never;
         patch?: never;
+        trace?: never;
+    };
+    "/api/v1/session/{session_id}/price": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /**
+         * Changes the price and/or the obra social plus of an unpaid session.
+         * @description Changing `debt` or `transfer_debt` marks the price as set by hand
+         *     (`price_overridden`), so packages no longer change it.
+         *
+         *     # Errors
+         *
+         *     Returns `400` if the session ID is invalid, an amount is negative, or the
+         *     session is already paid, `401` for an invalid authentication session,
+         *     `403` if the user is not an owner or receptionist, `404` if the session
+         *     does not exist, `422` if no field is sent, and `500` on database errors.
+         */
+        patch: operations["update_session_price"];
         trace?: never;
     };
     "/api/v1/sessions/{session_id}/appointment": {
@@ -1471,6 +1598,15 @@ export interface components {
             clinic_id: string;
             owner_id: string;
         };
+        CreateForTreatmentRequest: components["schemas"]["CreateRequest"] & {
+            /**
+             * Format: decimal
+             * @description Price of the session, set by hand. When omitted, the session costs the
+             *     price of the treatment service (and packages may apply when paid). Only
+             *     owners and receptionists can set it.
+             */
+            cost?: string | null;
+        };
         CreateGroupRequest: {
             clinic_service_id: string;
             description?: string | null;
@@ -1509,6 +1645,24 @@ export interface components {
             name: string;
             /** Format: decimal */
             surcharge: string;
+        };
+        CreatePackageRequest: {
+            /**
+             * Format: int32
+             * @description Minimum number of sessions of the service paid together. At least 2.
+             */
+            min_sessions: number;
+            /**
+             * Format: decimal
+             * @description Cash price of each session.
+             */
+            price: string;
+            /**
+             * Format: decimal
+             * @description Transfer price of each session. When omitted or `null`, a transfer
+             *     costs the same as `price`.
+             */
+            transfer_price?: string | null;
         };
         CreatePatientRequest: {
             address?: string | null;
@@ -1598,8 +1752,9 @@ export interface components {
         };
         CreateSessionRequest: {
             /**
-             * @description Amount to charge for the session. When omitted, the price of the
-             *     service given in `service_id` is charged. If both are sent, `cost` wins.
+             * @description Amount to charge for the session, set by hand. When omitted, the price
+             *     of the service given in `service_id` is charged. If both are sent,
+             *     `cost` wins. Only owners and receptionists can set it.
              */
             cost?: string | null;
             patient_id: string;
@@ -1724,7 +1879,7 @@ export interface components {
         ImageUploadRequest: {
             /**
              * Format: binary
-             * @description Image file to upload. JPEG, PNG, and WebP are accepted.
+             * @description Image (JPEG, PNG, WebP) or PDF file to upload.
              */
             file: string;
         };
@@ -1799,6 +1954,37 @@ export interface components {
             /** @description Sessions of the payer covered by this payment. */
             session_ids: string[];
         };
+        /** @description What a group of sessions costs when paid together. */
+        Quote: {
+            sessions: components["schemas"]["QuotedSession"][];
+            /**
+             * Format: decimal
+             * @description Sum of every `price` and `plus`.
+             */
+            total: string;
+        };
+        QuoteRequest: {
+            /** @description How they will be paid. */
+            method: components["schemas"]["PaymentMethod"];
+            /** @description Unpaid sessions of one patient to be paid together. */
+            session_ids: string[];
+        };
+        /** @description What one session costs in a [`Quote`]. */
+        QuotedSession: {
+            id: string;
+            /** @description Package whose price applies, if any. */
+            package_id?: string | null;
+            /**
+             * Format: decimal
+             * @description Obra social surcharge charged on top of `price`.
+             */
+            plus: string;
+            /**
+             * Format: decimal
+             * @description Price of the session for the payment method, without the plus.
+             */
+            price: string;
+        };
         RoleData: {
             /** @enum {string} */
             role: "owner";
@@ -1824,6 +2010,25 @@ export interface components {
              * @example 09:00
              */
             start_time: string;
+        };
+        ServicePackageResponse: {
+            id: string;
+            /**
+             * Format: int32
+             * @description Minimum number of sessions of the service that must be paid together.
+             */
+            min_sessions: number;
+            /**
+             * Format: decimal
+             * @description Cash price of each session.
+             */
+            price: string;
+            service_id: string;
+            /**
+             * Format: decimal
+             * @description Transfer price of each session. `null` means the same as `price`.
+             */
+            transfer_price?: string | null;
         };
         ServiceResponse: {
             billing_type: components["schemas"]["BillingType"];
@@ -1854,8 +2059,21 @@ export interface components {
              * @description 1-based position of the session within its treatment.
              */
             number: number;
+            /** @description Package the session was paid with, if any. */
+            package_id?: string | null;
             /** @description The active payment covering this session, if it has been paid. */
             payment_id?: string | null;
+            /**
+             * @description Obra social surcharge charged on top of `debt` (or `transfer_debt`),
+             *     paid together with the session. Once the session is paid, it was
+             *     charged.
+             */
+            plus?: string;
+            /**
+             * @description `true` when the price was set by hand instead of taken from the
+             *     service. Packages never change a manual price.
+             */
+            price_overridden?: boolean;
             status: components["schemas"]["SessionStatus"];
             /** @description Amount owed when paid by transfer. `null` means the same as `debt`. */
             transfer_debt?: string | null;
@@ -1970,6 +2188,17 @@ export interface components {
             /** Format: decimal */
             surcharge: string;
         };
+        UpdatePackageRequest: {
+            /** Format: int32 */
+            min_sessions?: number | null;
+            /** Format: decimal */
+            price?: string | null;
+            /**
+             * Format: decimal
+             * @description Omit it to keep the current one, or send `null` to remove it.
+             */
+            transfer_price?: string | null;
+        };
         UpdatePatientRequest: {
             address?: string | null;
             birth_date?: null | components["schemas"]["Date"];
@@ -2001,6 +2230,24 @@ export interface components {
              *     send `null` to remove it so a transfer costs the same as `price`.
              */
             transfer_price?: string | null;
+        };
+        UpdateSessionPriceRequest: {
+            /**
+             * Format: decimal
+             * @description New cash price. Marks the price as set by hand.
+             */
+            debt?: string | null;
+            /**
+             * Format: decimal
+             * @description New obra social surcharge. Send `0` to not charge it.
+             */
+            plus?: string | null;
+            /**
+             * Format: decimal
+             * @description New transfer price. Omit it to keep the current one, or send `null` so
+             *     a transfer costs the same as `debt`. Marks the price as set by hand.
+             */
+            transfer_debt?: string | null;
         };
         UpdateSessionRequest: {
             evolution?: string | null;
@@ -2038,7 +2285,7 @@ export interface components {
             /** @description Description of the uploaded image, if any. */
             description?: string | null;
             /**
-             * @description Generated filename of the canonical WebP image.
+             * @description Generated filename of the uploaded media file.
              * @example V1StGXR8_Z.webp
              */
             filename: string;
@@ -3141,6 +3388,282 @@ export interface operations {
             };
         };
     };
+    get_all_service_packages: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Public ID of the clinic service */
+                service_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Packages of the service */
+            200: {
+                headers: {
+                    "x-request-id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ServicePackageResponse"][];
+                };
+            };
+            /** @description La sesión ha expirado o no es válida */
+            401: {
+                headers: {
+                    "x-request-id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description No tiene permiso para realizar esta acción */
+            403: {
+                headers: {
+                    "x-request-id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Error interno */
+            500: {
+                headers: {
+                    "x-request-id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    create_service_package: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Public ID of the clinic service */
+                service_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreatePackageRequest"];
+            };
+        };
+        responses: {
+            /** @description Package created */
+            201: {
+                headers: {
+                    "x-request-id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ServicePackageResponse"];
+                };
+            };
+            /** @description El cuerpo de la solicitud tiene un formato incorrecto */
+            400: {
+                headers: {
+                    "x-request-id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description La sesión ha expirado o no es válida */
+            401: {
+                headers: {
+                    "x-request-id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description No tiene permiso para realizar esta acción */
+            403: {
+                headers: {
+                    "x-request-id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description No se encontró el servicio de la clínica */
+            404: {
+                headers: {
+                    "x-request-id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Error interno */
+            500: {
+                headers: {
+                    "x-request-id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    delete_service_package: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Public ID of the clinic service */
+                service_id: string;
+                /** @description Public ID of the package */
+                package_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Package deleted */
+            200: {
+                headers: {
+                    "x-request-id"?: string;
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description La sesión ha expirado o no es válida */
+            401: {
+                headers: {
+                    "x-request-id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description No tiene permiso para realizar esta acción */
+            403: {
+                headers: {
+                    "x-request-id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description No se encontró el pack */
+            404: {
+                headers: {
+                    "x-request-id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Error interno */
+            500: {
+                headers: {
+                    "x-request-id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    update_service_package: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Public ID of the clinic service */
+                service_id: string;
+                /** @description Public ID of the package */
+                package_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdatePackageRequest"];
+            };
+        };
+        responses: {
+            /** @description Package updated */
+            200: {
+                headers: {
+                    "x-request-id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ServicePackageResponse"];
+                };
+            };
+            /** @description El cuerpo de la solicitud tiene un formato incorrecto */
+            400: {
+                headers: {
+                    "x-request-id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description La sesión ha expirado o no es válida */
+            401: {
+                headers: {
+                    "x-request-id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description No tiene permiso para realizar esta acción */
+            403: {
+                headers: {
+                    "x-request-id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description No se encontró el pack */
+            404: {
+                headers: {
+                    "x-request-id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Error interno */
+            500: {
+                headers: {
+                    "x-request-id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
     get_all_groups: {
         parameters: {
             query?: never;
@@ -3930,9 +4453,9 @@ export interface operations {
             query: {
                 /** @description Public ID of the treatment this image is related to. */
                 treatment_id: string;
-                /** @description Display name for the image attachment. */
+                /** @description Display name for the media attachment. */
                 name: string;
-                /** @description Optional description of the image, up to 1000 characters. */
+                /** @description Optional description of the attachment, up to 1000 characters. */
                 description?: string | null;
             };
             header?: never;
@@ -3945,7 +4468,7 @@ export interface operations {
             };
         };
         responses: {
-            /** @description Image uploaded and attached to the treatment */
+            /** @description Image or PDF uploaded and attached to the treatment */
             201: {
                 headers: {
                     [name: string]: unknown;
@@ -5776,6 +6299,81 @@ export interface operations {
             };
         };
     };
+    quote_sessions: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["QuoteRequest"];
+            };
+        };
+        responses: {
+            /** @description Price of the sessions paid together */
+            200: {
+                headers: {
+                    "x-request-id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Quote"];
+                };
+            };
+            /** @description El cuerpo de la solicitud tiene un formato incorrecto */
+            400: {
+                headers: {
+                    "x-request-id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description La sesión ha expirado o no es válida */
+            401: {
+                headers: {
+                    "x-request-id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description No tiene permiso para realizar esta acción */
+            403: {
+                headers: {
+                    "x-request-id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description No se encontró la sesión */
+            404: {
+                headers: {
+                    "x-request-id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Error interno */
+            500: {
+                headers: {
+                    "x-request-id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
     get_session: {
         parameters: {
             query?: never;
@@ -6009,6 +6607,87 @@ export interface operations {
             };
             /** @description No fue posible interpretar los datos del pago */
             422: {
+                headers: {
+                    "x-request-id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Error interno */
+            500: {
+                headers: {
+                    "x-request-id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    update_session_price: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /**
+                 * @description Public ID of the session
+                 * @example V1StGXR8_Z
+                 */
+                session_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateSessionPriceRequest"];
+            };
+        };
+        responses: {
+            /** @description Session price updated */
+            200: {
+                headers: {
+                    "x-request-id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SessionResponse"];
+                };
+            };
+            /** @description El cuerpo de la solicitud tiene un formato incorrecto o el ID no es válido */
+            400: {
+                headers: {
+                    "x-request-id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description La sesión ha expirado o no es válida */
+            401: {
+                headers: {
+                    "x-request-id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description No tiene permiso para realizar esta acción */
+            403: {
+                headers: {
+                    "x-request-id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description No se encontró la sesión */
+            404: {
                 headers: {
                     "x-request-id"?: string;
                     [name: string]: unknown;
@@ -6720,10 +7399,10 @@ export interface operations {
             };
             cookie?: never;
         };
-        /** @description Appointment idempotency key and local start/end times. */
+        /** @description Appointment idempotency key, local start/end times and an optional manual price. */
         requestBody: {
             content: {
-                "application/json": components["schemas"]["CreateRequest"];
+                "application/json": components["schemas"]["CreateForTreatmentRequest"];
             };
         };
         responses: {
