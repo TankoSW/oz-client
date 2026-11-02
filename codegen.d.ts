@@ -1556,10 +1556,10 @@ export interface components {
          *     It also serves as the HTTP response body for the appointment endpoints, so
          *     derive [`Serialize`] and [`ToSchema`] keep it directly serializable.
          */
-        Appointment: (null | components["schemas"]["PatientData"]) & {
+        Appointment: (components["schemas"]["PatientData"] | null) & {
             created_by: components["schemas"]["StaffId"];
             id: components["schemas"]["AppointmentId"];
-            med_staff_id?: null | components["schemas"]["StaffId"];
+            med_staff_id?: components["schemas"]["StaffId"] | null;
             range: string;
             session_id: components["schemas"]["SessionId"];
             status: components["schemas"]["Status"];
@@ -1666,7 +1666,7 @@ export interface components {
         };
         CreatePatientRequest: {
             address?: string | null;
-            birth_date?: null | components["schemas"]["Date"];
+            birth_date?: components["schemas"]["Date"] | null;
             dni?: string | null;
             /** Format: int64 */
             id_obra_social?: number | null;
@@ -1915,7 +1915,7 @@ export interface components {
             address?: string | null;
             /** Format: int32 */
             age?: number | null;
-            birth_date?: null | components["schemas"]["Date"];
+            birth_date?: components["schemas"]["Date"] | null;
             dni?: string | null;
             id: string;
             /** Format: int64 */
@@ -1947,7 +1947,7 @@ export interface components {
             created_by: string;
             /** Format: date */
             date: string;
-            detail?: null | components["schemas"]["PaymentDetail"];
+            detail?: components["schemas"]["PaymentDetail"] | null;
             id: string;
             payer_id: string;
             payment_method: components["schemas"]["PaymentMethod"];
@@ -2049,7 +2049,7 @@ export interface components {
         };
         SessionId: string;
         SessionResponse: {
-            appointment?: null | components["schemas"]["Appointment"];
+            appointment?: components["schemas"]["Appointment"] | null;
             /** @description Amount owed when paid in cash. */
             debt: string;
             evolution?: string | null;
@@ -2201,7 +2201,7 @@ export interface components {
         };
         UpdatePatientRequest: {
             address?: string | null;
-            birth_date?: null | components["schemas"]["Date"];
+            birth_date?: components["schemas"]["Date"] | null;
             dni?: string | null;
             /** Format: int64 */
             id_obra_social?: number | null;
@@ -2210,7 +2210,7 @@ export interface components {
             num_afiliado?: number | null;
             occupation?: string | null;
             phone?: string | null;
-            status?: null | components["schemas"]["PatientStatus"];
+            status?: components["schemas"]["PatientStatus"] | null;
         };
         UpdatePaymentRequest: components["schemas"]["CreatePaymentRequest"] & {
             reason: string;
@@ -2260,7 +2260,7 @@ export interface components {
             name?: string | null;
             password?: string | null;
             phone?: string | null;
-            role?: null | components["schemas"]["UserRole"];
+            role?: components["schemas"]["UserRole"] | null;
             /** Format: decimal */
             salary?: string | null;
         };
@@ -2273,7 +2273,7 @@ export interface components {
             /** Format: date */
             finished?: string | null;
             motive?: string | null;
-            status?: null | components["schemas"]["TreatmentStatus"];
+            status?: components["schemas"]["TreatmentStatus"] | null;
         };
         /** @description The settings fields that may be changed by the logged-in user. */
         UpdateUserSettings: {
