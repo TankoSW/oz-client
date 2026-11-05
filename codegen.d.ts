@@ -4508,7 +4508,12 @@ export interface operations {
     };
     get_all_service_packages: {
         parameters: {
-            query?: never;
+            query?: {
+                /** @description Maximum number of records to return (1–100, defaults to 50). */
+                limit?: number;
+                /** @description Number of matching records to skip (defaults to 0). */
+                offset?: number;
+            };
             header?: never;
             path: {
                 /** @description Public ID of the clinic service */
@@ -4577,10 +4582,6 @@ export interface operations {
             path: {
                 /** @description Public ID of the clinic service */
                 service_id: string;
-                /** @description Maximum number of records to return (1–100, defaults to 50). */
-                limit: number;
-                /** @description Number of matching records to skip (defaults to 0). */
-                offset: number;
             };
             cookie?: never;
         };
@@ -8804,7 +8805,12 @@ export interface operations {
     };
     get_all_notes_in_treatment: {
         parameters: {
-            query?: never;
+            query?: {
+                /** @description Maximum number of records to return (1–100, defaults to 50). */
+                limit?: number;
+                /** @description Number of matching records to skip (defaults to 0). */
+                offset?: number;
+            };
             header?: never;
             path: {
                 /** @description Treatment ID */
@@ -8873,10 +8879,6 @@ export interface operations {
             path: {
                 /** @description Treatment ID */
                 treatment_id: string;
-                /** @description Maximum number of records to return (1–100, defaults to 50). */
-                limit: number;
-                /** @description Number of matching records to skip (defaults to 0). */
-                offset: number;
             };
             cookie?: never;
         };
