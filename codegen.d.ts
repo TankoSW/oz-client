@@ -13,8 +13,8 @@ export interface paths {
         };
         /**
          * Lists non-voided expenses whose dates fall within the inclusive range,
-         *     ordered by date and creation time, newest first. Returns an empty array if
-         *     no expenses match. The endpoint is restricted to owners.
+         *     ordered by date and creation time, newest first. Use `limit` (1–100,
+         *     default 50) and `offset` (default 0) to page results.
          * @description # Errors
          *
          *     Returns an error for an invalid period, an unauthorized or forbidden
@@ -86,7 +86,10 @@ export interface paths {
          *     Results are newest first. `payer_name` is `null` if no patient or gym member
          *     matches the payer ID, `detail` is `null` if no payment detail is stored, and
          *     `services` or `sessions` may be empty. Returns an empty array when the
-         *     period has no payments. The endpoint is restricted to owners.
+         *     period has no payments. Results use `limit` (1–100, default 50) and
+         *     `offset` (default 0) for pagination. Voided payments are included with
+         *     `voided: true` and their recorded `void_reason`. Owners and admins may use
+         *     this endpoint.
          * @description # Errors
          *
          *     Returns an error for an invalid period, an unauthorized or forbidden
@@ -116,7 +119,7 @@ export interface paths {
          *     sessions from multiple services, its amount is apportioned according to the
          *     sessions' recorded charges. Payments with no linked sessions are reported
          *     under `Sin servicio`. For example, request `?from=2026-01-01&to=2026-03-31`
-         *     to report the first quarter of 2026. The endpoint is restricted to owners.
+         *     to report the first quarter of 2026. Owners and admins may use this endpoint.
          *
          *     # Errors
          *
@@ -960,7 +963,8 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * Lists all patients in the authenticated user's clinic.
+         * Lists patients in the authenticated user's clinic, ordered by name. Use
+         *     `limit` (1–100, default 50) and `offset` (default 0) to page results.
          * @description # Errors
          *
          *     Returns `401` if the session is invalid, `403` if the operation is
@@ -1101,7 +1105,8 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * Lists all active payments recorded in the clinic.
+         * Lists active payments recorded in the clinic, newest first. Use `limit`
+         *     (1–100, default 50) and `offset` (default 0) to page results.
          * @description # Errors
          *
          *     Returns `401` if the session is invalid, `403` if the operation is
@@ -1135,7 +1140,8 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * Lists all payments made by a payer identified by `payer_id`.
+         * Lists payments made by a payer identified by `payer_id`, newest first.
+         *     Use `limit` (1–100, default 50) and `offset` (default 0) to page results.
          * @description # Errors
          *
          *     Returns `400` if the payer ID is invalid, `401` if the session is invalid,
@@ -1694,7 +1700,7 @@ export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
         /**
-         * @description One active payment in an accounting period, enriched with its related
+         * @description One payment in an accounting period, enriched with its related
          *     people, sessions, services, and payment-specific detail.
          */
         AccountingPayment: {
@@ -1734,6 +1740,10 @@ export interface components {
             services: components["schemas"]["AccountingPaymentService"][];
             /** @description Sessions covered by this payment, ordered by treatment and session number. */
             sessions: components["schemas"]["AccountingPaymentSession"][];
+            /** @description Reason recorded when the payment was voided, if applicable. */
+            void_reason?: string | null;
+            /** @description Whether this payment has been voided. */
+            voided: boolean;
         };
         AccountingPaymentService: {
             /** @description Public service identifier. */
@@ -2940,6 +2950,10 @@ export interface operations {
                  * @example 2026-03-31
                  */
                 to: components["schemas"]["Date"];
+                /** @description Maximum number of records to return (1–100, defaults to 50). */
+                limit?: number;
+                /** @description Number of matching records to skip (defaults to 0). */
+                offset?: number;
             };
             header?: never;
             path?: never;
@@ -3234,6 +3248,10 @@ export interface operations {
                  * @example 2026-03-31
                  */
                 to: components["schemas"]["Date"];
+                /** @description Maximum number of records to return (1–100, defaults to 50). */
+                limit?: number;
+                /** @description Number of matching records to skip (defaults to 0). */
+                offset?: number;
             };
             header?: never;
             path?: never;
@@ -3241,7 +3259,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Matching active payments with related payer, creator, session, and service data, or an empty array. */
+            /** @description Matching payments with related payer, creator, session, and service data, or an empty array. */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -3370,6 +3388,10 @@ export interface operations {
                 start: string;
                 /** @description end of time range (inclusive) */
                 end: string;
+                /** @description Maximum number of records to return (1–100, defaults to 50). */
+                limit?: number;
+                /** @description Number of matching records to skip (defaults to 0). */
+                offset?: number;
             };
             header?: never;
             path?: never;
@@ -3406,6 +3428,10 @@ export interface operations {
                 start?: string | null;
                 /** @description Optional end of time range (inclusive) */
                 end?: string | null;
+                /** @description Maximum number of records to return (1–100, defaults to 50). */
+                limit?: number;
+                /** @description Number of matching records to skip (defaults to 0). */
+                offset?: number;
             };
             header?: never;
             path: {
@@ -3470,7 +3496,12 @@ export interface operations {
     };
     get_all_appointments_from_creator: {
         parameters: {
-            query?: never;
+            query?: {
+                /** @description Maximum number of records to return (1–100, defaults to 50). */
+                limit?: number;
+                /** @description Number of matching records to skip (defaults to 0). */
+                offset?: number;
+            };
             header?: never;
             path: {
                 /** @description Staff ID */
@@ -3991,7 +4022,12 @@ export interface operations {
     };
     get_all_clinics: {
         parameters: {
-            query?: never;
+            query?: {
+                /** @description Maximum number of records to return (1–100, defaults to 50). */
+                limit?: number;
+                /** @description Number of matching records to skip (defaults to 0). */
+                offset?: number;
+            };
             header?: never;
             path?: never;
             cookie?: never;
@@ -4117,7 +4153,12 @@ export interface operations {
     };
     get_all_clinic_services: {
         parameters: {
-            query?: never;
+            query?: {
+                /** @description Maximum number of records to return (1–100, defaults to 50). */
+                limit?: number;
+                /** @description Number of matching records to skip (defaults to 0). */
+                offset?: number;
+            };
             header?: never;
             path?: never;
             cookie?: never;
@@ -4536,6 +4577,10 @@ export interface operations {
             path: {
                 /** @description Public ID of the clinic service */
                 service_id: string;
+                /** @description Maximum number of records to return (1–100, defaults to 50). */
+                limit: number;
+                /** @description Number of matching records to skip (defaults to 0). */
+                offset: number;
             };
             cookie?: never;
         };
@@ -4773,7 +4818,12 @@ export interface operations {
     };
     get_all_groups: {
         parameters: {
-            query?: never;
+            query?: {
+                /** @description Maximum number of records to return (1–100, defaults to 50). */
+                limit?: number;
+                /** @description Number of matching records to skip (defaults to 0). */
+                offset?: number;
+            };
             header?: never;
             path?: never;
             cookie?: never;
@@ -5055,7 +5105,12 @@ export interface operations {
     };
     get_all_group_subscriptions: {
         parameters: {
-            query?: never;
+            query?: {
+                /** @description Maximum number of records to return (1–100, defaults to 50). */
+                limit?: number;
+                /** @description Number of matching records to skip (defaults to 0). */
+                offset?: number;
+            };
             header?: never;
             path: {
                 group_id: string;
@@ -6030,7 +6085,12 @@ export interface operations {
     };
     get_all_obras_sociales: {
         parameters: {
-            query?: never;
+            query?: {
+                /** @description Maximum number of records to return (1–100, defaults to 50). */
+                limit?: number;
+                /** @description Number of matching records to skip (defaults to 0). */
+                offset?: number;
+            };
             header?: never;
             path?: never;
             cookie?: never;
@@ -6380,7 +6440,12 @@ export interface operations {
     };
     get_all_patients: {
         parameters: {
-            query?: never;
+            query?: {
+                /** @description Maximum number of records to return (1–100, defaults to 50). */
+                limit?: number;
+                /** @description Number of matching records to skip (defaults to 0). */
+                offset?: number;
+            };
             header?: never;
             path?: never;
             cookie?: never;
@@ -6698,7 +6763,12 @@ export interface operations {
     };
     get_patient_appointments: {
         parameters: {
-            query?: never;
+            query?: {
+                /** @description Maximum number of records to return (1–100, defaults to 50). */
+                limit?: number;
+                /** @description Number of matching records to skip (defaults to 0). */
+                offset?: number;
+            };
             header?: never;
             path: {
                 /** @description Patient ID */
@@ -6918,7 +6988,12 @@ export interface operations {
     };
     get_all_payments: {
         parameters: {
-            query?: never;
+            query?: {
+                /** @description Maximum number of records to return (1–100, defaults to 50). */
+                limit?: number;
+                /** @description Number of matching records to skip (defaults to 0). */
+                offset?: number;
+            };
             header?: never;
             path?: never;
             cookie?: never;
@@ -7064,7 +7139,12 @@ export interface operations {
     };
     get_all_payments_from_id: {
         parameters: {
-            query?: never;
+            query?: {
+                /** @description Maximum number of records to return (1–100, defaults to 50). */
+                limit?: number;
+                /** @description Number of matching records to skip (defaults to 0). */
+                offset?: number;
+            };
             header?: never;
             path: {
                 /** @description Payer ID */
@@ -7958,7 +8038,12 @@ export interface operations {
     };
     get_all_staff: {
         parameters: {
-            query?: never;
+            query?: {
+                /** @description Maximum number of records to return (1–100, defaults to 50). */
+                limit?: number;
+                /** @description Number of matching records to skip (defaults to 0). */
+                offset?: number;
+            };
             header?: never;
             path?: never;
             cookie?: never;
@@ -8216,7 +8301,12 @@ export interface operations {
     };
     get_all_treatments_from_patient: {
         parameters: {
-            query?: never;
+            query?: {
+                /** @description Maximum number of records to return (1–100, defaults to 50). */
+                limit?: number;
+                /** @description Number of matching records to skip (defaults to 0). */
+                offset?: number;
+            };
             header?: never;
             path: {
                 /** @description Patient ID */
@@ -8280,7 +8370,12 @@ export interface operations {
     };
     get_all_treatments_from_staff: {
         parameters: {
-            query?: never;
+            query?: {
+                /** @description Maximum number of records to return (1–100, defaults to 50). */
+                limit?: number;
+                /** @description Number of matching records to skip (defaults to 0). */
+                offset?: number;
+            };
             header?: never;
             path: {
                 /** @description Staff ID */
@@ -8640,7 +8735,12 @@ export interface operations {
     };
     get_all_images_in_treatment: {
         parameters: {
-            query?: never;
+            query?: {
+                /** @description Maximum number of records to return (1–100, defaults to 50). */
+                limit?: number;
+                /** @description Number of matching records to skip (defaults to 0). */
+                offset?: number;
+            };
             header?: never;
             path: {
                 /** @description Treatment ID */
@@ -8773,6 +8873,10 @@ export interface operations {
             path: {
                 /** @description Treatment ID */
                 treatment_id: string;
+                /** @description Maximum number of records to return (1–100, defaults to 50). */
+                limit: number;
+                /** @description Number of matching records to skip (defaults to 0). */
+                offset: number;
             };
             cookie?: never;
         };
@@ -8836,7 +8940,12 @@ export interface operations {
     };
     get_all_session_by_treatment: {
         parameters: {
-            query?: never;
+            query?: {
+                /** @description Maximum number of records to return (1–100, defaults to 50). */
+                limit?: number;
+                /** @description Number of matching records to skip (defaults to 0). */
+                offset?: number;
+            };
             header?: never;
             path: {
                 /** @description Treatment ID */
@@ -8900,7 +9009,12 @@ export interface operations {
     };
     get_all_users: {
         parameters: {
-            query?: never;
+            query?: {
+                /** @description Maximum number of records to return (1–100, defaults to 50). */
+                limit?: number;
+                /** @description Number of matching records to skip (defaults to 0). */
+                offset?: number;
+            };
             header?: never;
             path?: never;
             cookie?: never;
