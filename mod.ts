@@ -70,6 +70,18 @@ function withCallbacks<Operation>(
   } as FetchOptions<Operation>;
 }
 
+/** OpenAPI schema `AccountingPayment`. */
+export type AccountingPayment = components["schemas"]["AccountingPayment"];
+
+/** OpenAPI schema `AccountingPaymentService`. */
+export type AccountingPaymentService = components["schemas"]["AccountingPaymentService"];
+
+/** OpenAPI schema `AccountingPaymentSession`. */
+export type AccountingPaymentSession = components["schemas"]["AccountingPaymentSession"];
+
+/** OpenAPI schema `AccountingSummary`. */
+export type AccountingSummary = components["schemas"]["AccountingSummary"];
+
 /** OpenAPI schema `ActiveTreatment`. */
 export type ActiveTreatment = components["schemas"]["ActiveTreatment"];
 
@@ -154,6 +166,12 @@ export type ErrorCode = components["schemas"]["ErrorCode"];
 /** OpenAPI schema `ErrorResponse`. */
 export type ErrorResponse = components["schemas"]["ErrorResponse"];
 
+/** OpenAPI schema `Expense`. */
+export type Expense = components["schemas"]["Expense"];
+
+/** OpenAPI schema `ExpenseRequest`. */
+export type ExpenseRequest = components["schemas"]["ExpenseRequest"];
+
 /** OpenAPI schema `ForgotPasswordRequest`. */
 export type ForgotPasswordRequest = components["schemas"]["ForgotPasswordRequest"];
 
@@ -216,6 +234,9 @@ export type RoleData = components["schemas"]["RoleData"];
 
 /** OpenAPI schema `ScheduleInput`. */
 export type ScheduleInput = components["schemas"]["ScheduleInput"];
+
+/** OpenAPI schema `ServiceIncome`. */
+export type ServiceIncome = components["schemas"]["ServiceIncome"];
 
 /** OpenAPI schema `ServicePackageResponse`. */
 export type ServicePackageResponse = components["schemas"]["ServicePackageResponse"];
@@ -313,11 +334,28 @@ export type UserRole = components["schemas"]["UserRole"];
 /** OpenAPI schema `UserSettings`. */
 export type UserSettings = components["schemas"]["UserSettings"];
 
+/** OpenAPI schema `VoidExpenseRequest`. */
+export type VoidExpenseRequest = components["schemas"]["VoidExpenseRequest"];
+
 
 /** The grouped, typed client returned by `createOzClient`. */
 export interface OzClient {
   /** The underlying openapi-fetch client for direct path-based calls. */
   raw_client: Client<paths>;
+  accounting: {
+    /** Calls GET /api/v1/accounting/expenses. Per-call lifecycle callbacks override the client defaults. */
+    listAccountingExpenses: (body: OzRequestOptions<operations["list_accounting_expenses"]>) => ReturnType<ClientForPath<paths["/api/v1/accounting/expenses"], "application/json">["GET"]>;
+    /** Calls POST /api/v1/accounting/expenses. Per-call lifecycle callbacks override the client defaults. */
+    createAccountingExpense: (body: OzRequestOptions<operations["create_accounting_expense"]>) => ReturnType<ClientForPath<paths["/api/v1/accounting/expenses"], "application/json">["POST"]>;
+    /** Calls DELETE /api/v1/accounting/expenses/{expense_id}. Per-call lifecycle callbacks override the client defaults. */
+    voidAccountingExpense: (body: OzRequestOptions<operations["void_accounting_expense"]>) => ReturnType<ClientForPath<paths["/api/v1/accounting/expenses/{expense_id}"], "application/json">["DELETE"]>;
+    /** Calls PATCH /api/v1/accounting/expenses/{expense_id}. Per-call lifecycle callbacks override the client defaults. */
+    updateAccountingExpense: (body: OzRequestOptions<operations["update_accounting_expense"]>) => ReturnType<ClientForPath<paths["/api/v1/accounting/expenses/{expense_id}"], "application/json">["PATCH"]>;
+    /** Calls GET /api/v1/accounting/payments. Per-call lifecycle callbacks override the client defaults. */
+    listAccountingPayments: (body: OzRequestOptions<operations["list_accounting_payments"]>) => ReturnType<ClientForPath<paths["/api/v1/accounting/payments"], "application/json">["GET"]>;
+    /** Calls GET /api/v1/accounting/summary. Per-call lifecycle callbacks override the client defaults. */
+    getAccountingSummary: (body: OzRequestOptions<operations["get_accounting_summary"]>) => ReturnType<ClientForPath<paths["/api/v1/accounting/summary"], "application/json">["GET"]>;
+  };
   appointment: {
     /** Calls GET /api/v1/appointment. Per-call lifecycle callbacks override the client defaults. */
     getAllAppointmentsInTimeRange: (body: OzRequestOptions<operations["get_all_appointments_in_time_range"]>) => ReturnType<ClientForPath<paths["/api/v1/appointment"], "application/json">["GET"]>;
@@ -403,6 +441,10 @@ export interface OzClient {
     getGroupSubscription: (body: OzRequestOptions<operations["get_group_subscription"]>) => ReturnType<ClientForPath<paths["/api/v1/group_subscription/{subscription_id}"], "application/json">["GET"]>;
     /** Calls PATCH /api/v1/group_subscription/{subscription_id}. Per-call lifecycle callbacks override the client defaults. */
     updateGroupSubscription: (body: OzRequestOptions<operations["update_group_subscription"]>) => ReturnType<ClientForPath<paths["/api/v1/group_subscription/{subscription_id}"], "application/json">["PATCH"]>;
+  };
+  health: {
+    /** Calls GET /api/v1/health. Per-call lifecycle callbacks override the client defaults. */
+    checkHealth: (body?: OzRequestOptions<operations["check_health"]>) => ReturnType<ClientForPath<paths["/api/v1/health"], "application/json">["GET"]>;
   };
   media: {
     /** Calls POST /api/v1/media. Per-call lifecycle callbacks override the client defaults. */
@@ -537,6 +579,20 @@ export function createOzClient(options: OzClientOptions): OzClient {
   return {
     /** The underlying openapi-fetch client for direct path-based calls. */
     raw_client,
+    accounting: {
+      /** Calls GET /api/v1/accounting/expenses. Per-call lifecycle callbacks override the client defaults. */
+      listAccountingExpenses: (body: OzRequestOptions<operations["list_accounting_expenses"]>) => raw_client.GET("/api/v1/accounting/expenses", withCallbacks(body, defaults)),
+      /** Calls POST /api/v1/accounting/expenses. Per-call lifecycle callbacks override the client defaults. */
+      createAccountingExpense: (body: OzRequestOptions<operations["create_accounting_expense"]>) => raw_client.POST("/api/v1/accounting/expenses", withCallbacks(body, defaults)),
+      /** Calls DELETE /api/v1/accounting/expenses/{expense_id}. Per-call lifecycle callbacks override the client defaults. */
+      voidAccountingExpense: (body: OzRequestOptions<operations["void_accounting_expense"]>) => raw_client.DELETE("/api/v1/accounting/expenses/{expense_id}", withCallbacks(body, defaults)),
+      /** Calls PATCH /api/v1/accounting/expenses/{expense_id}. Per-call lifecycle callbacks override the client defaults. */
+      updateAccountingExpense: (body: OzRequestOptions<operations["update_accounting_expense"]>) => raw_client.PATCH("/api/v1/accounting/expenses/{expense_id}", withCallbacks(body, defaults)),
+      /** Calls GET /api/v1/accounting/payments. Per-call lifecycle callbacks override the client defaults. */
+      listAccountingPayments: (body: OzRequestOptions<operations["list_accounting_payments"]>) => raw_client.GET("/api/v1/accounting/payments", withCallbacks(body, defaults)),
+      /** Calls GET /api/v1/accounting/summary. Per-call lifecycle callbacks override the client defaults. */
+      getAccountingSummary: (body: OzRequestOptions<operations["get_accounting_summary"]>) => raw_client.GET("/api/v1/accounting/summary", withCallbacks(body, defaults)),
+      },
     appointment: {
       /** Calls GET /api/v1/appointment. Per-call lifecycle callbacks override the client defaults. */
       getAllAppointmentsInTimeRange: (body: OzRequestOptions<operations["get_all_appointments_in_time_range"]>) => raw_client.GET("/api/v1/appointment", withCallbacks(body, defaults)),
@@ -622,6 +678,10 @@ export function createOzClient(options: OzClientOptions): OzClient {
       getGroupSubscription: (body: OzRequestOptions<operations["get_group_subscription"]>) => raw_client.GET("/api/v1/group_subscription/{subscription_id}", withCallbacks(body, defaults)),
       /** Calls PATCH /api/v1/group_subscription/{subscription_id}. Per-call lifecycle callbacks override the client defaults. */
       updateGroupSubscription: (body: OzRequestOptions<operations["update_group_subscription"]>) => raw_client.PATCH("/api/v1/group_subscription/{subscription_id}", withCallbacks(body, defaults)),
+      },
+    health: {
+      /** Calls GET /api/v1/health. Per-call lifecycle callbacks override the client defaults. */
+      checkHealth: (body?: OzRequestOptions<operations["check_health"]>) => raw_client.GET("/api/v1/health", withCallbacks(body, defaults)),
       },
     media: {
       /** Calls POST /api/v1/media. Per-call lifecycle callbacks override the client defaults. */

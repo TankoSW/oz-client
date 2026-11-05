@@ -4,6 +4,134 @@
  */
 
 export interface paths {
+    "/api/v1/accounting/expenses": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Lists non-voided expenses whose dates fall within the inclusive range,
+         *     ordered by date and creation time, newest first. Returns an empty array if
+         *     no expenses match. The endpoint is restricted to owners.
+         * @description # Errors
+         *
+         *     Returns an error for an invalid period, an unauthorized or forbidden
+         *     request, or a database failure.
+         */
+        get: operations["list_accounting_expenses"];
+        put?: never;
+        /**
+         * Records an expense for the authenticated owner's clinic. Amounts must be
+         *     greater than zero and descriptions must not be blank; category is optional.
+         *     The created expense is returned. This endpoint is restricted to owners.
+         * @description # Errors
+         *
+         *     Returns an error for an invalid request, an unauthorized or forbidden
+         *     request, invalid expense data, or a database failure.
+         */
+        post: operations["create_accounting_expense"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/accounting/expenses/{expense_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /**
+         * Voids an expense so it no longer contributes to accounting totals. The
+         *     record is retained, and the reason is stored for reference. This endpoint
+         *     is restricted to owners.
+         * @description # Errors
+         *
+         *     Returns an error for an invalid expense ID, an unauthorized or forbidden
+         *     request, a missing expense, or a database failure.
+         */
+        delete: operations["void_accounting_expense"];
+        options?: never;
+        head?: never;
+        /**
+         * Updates the date, amount, description, and category of an active expense.
+         *     All fields in the request body are required, with category allowed to be
+         *     `null`. Returns the updated expense. This endpoint is restricted to owners.
+         * @description # Errors
+         *
+         *     Returns an error for an invalid request or expense ID, an unauthorized or
+         *     forbidden request, a missing expense, invalid expense data, or a database
+         *     failure.
+         */
+        patch: operations["update_accounting_expense"];
+        trace?: never;
+    };
+    "/api/v1/accounting/payments": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Lists all active payments in an inclusive date range, including payer and
+         *     creator names, payment details, linked sessions, and associated services.
+         *     Results are newest first. `payer_name` is `null` if no patient or gym member
+         *     matches the payer ID, `detail` is `null` if no payment detail is stored, and
+         *     `services` or `sessions` may be empty. Returns an empty array when the
+         *     period has no payments. The endpoint is restricted to owners.
+         * @description # Errors
+         *
+         *     Returns an error for an invalid period, an unauthorized or forbidden
+         *     request, or a database failure.
+         */
+        get: operations["list_accounting_payments"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/accounting/summary": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Returns income and expense totals for an inclusive date range.
+         * @description Income includes active payments dated within the range. The response also
+         *     separates cash and transfer payments, reports non-voided expenses and the
+         *     resulting net amount, and groups income by service. When one payment covers
+         *     sessions from multiple services, its amount is apportioned according to the
+         *     sessions' recorded charges. Payments with no linked sessions are reported
+         *     under `Sin servicio`. For example, request `?from=2026-01-01&to=2026-03-31`
+         *     to report the first quarter of 2026. The endpoint is restricted to owners.
+         *
+         *     # Errors
+         *
+         *     Returns an error for an invalid period, an unauthorized or forbidden
+         *     request, or a database failure.
+         */
+        get: operations["get_accounting_summary"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/appointment": {
         parameters: {
             query?: never;
@@ -629,6 +757,27 @@ export interface paths {
          *     database errors.
          */
         patch: operations["update_group_subscription"];
+        trace?: never;
+    };
+    "/api/v1/health": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Reports whether the HTTP service is running.
+         * @description Returns `200 OK` without requiring authentication. The response does not
+         *     perform a database or dependency health check.
+         */
+        get: operations["check_health"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
         trace?: never;
     };
     "/api/v1/media": {
@@ -1285,7 +1434,7 @@ export interface paths {
          *
          *     Returns `400` if the request body is malformed, `401` if the session is
          *     invalid, `403` if the operation is forbidden, and `500` on database
-         *     errors. Missing required fields return `422`.
+         *     errors. Missing required fields are rejected as a malformed request.
          */
         post: operations["create_treatment"];
         delete?: never;
@@ -1306,8 +1455,8 @@ export interface paths {
          * @description # Errors
          *
          *     Returns `400` if the patient ID is invalid, `401` if the session is
-         *     invalid, `403` if the operation is forbidden, `409` if sessions still use
-         *     the treatment, and `500` on database errors.
+         *     invalid, `403` if the operation is forbidden, and `500` on database
+         *     errors.
          */
         get: operations["get_all_treatments_from_patient"];
         put?: never;
@@ -1544,10 +1693,119 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /**
+         * @description One active payment in an accounting period, enriched with its related
+         *     people, sessions, services, and payment-specific detail.
+         */
+        AccountingPayment: {
+            /**
+             * Format: decimal
+             * @description Amount recorded for the payment.
+             * @example 1250.50
+             */
+            amount: string;
+            /**
+             * Format: date
+             * @description Date the payment record was created.
+             */
+            created_at: string;
+            /** @description Public identifier of the user who recorded the payment. */
+            created_by: string;
+            /** @description Name of the user who recorded the payment. */
+            created_by_name: string;
+            /**
+             * Format: date
+             * @description Date used to include the payment in the requested period.
+             */
+            date: string;
+            detail?: components["schemas"]["PaymentDetail"] | null;
+            /** @description Public payment identifier. */
+            id: string;
+            /** @description Public identifier of the person who paid. */
+            payer_id: string;
+            /** @description Name of the payer when a matching patient or gym member exists; otherwise `null`. */
+            payer_name?: string | null;
+            /** @description Whether the payment was made in cash or by transfer. */
+            payment_method: components["schemas"]["PaymentMethod"];
+            /**
+             * @description Distinct services associated through covered sessions or a gym payment.
+             *     Empty when the payment is not linked to a service.
+             */
+            services: components["schemas"]["AccountingPaymentService"][];
+            /** @description Sessions covered by this payment, ordered by treatment and session number. */
+            sessions: components["schemas"]["AccountingPaymentSession"][];
+        };
+        AccountingPaymentService: {
+            /** @description Public service identifier. */
+            id: string;
+            /** @description Service name. */
+            name: string;
+        };
+        AccountingPaymentSession: {
+            /** @description Public session identifier. */
+            id: string;
+            /** @description Public identifier and name of the service, when the session has one. */
+            service_id?: string | null;
+            /** @description Service name, or `null` when the session has no service association. */
+            service_name?: string | null;
+        };
+        AccountingSummary: {
+            /**
+             * Format: decimal
+             * @description Portion of `income` paid in cash.
+             * @example 45000.00
+             */
+            cash: string;
+            /**
+             * Format: decimal
+             * @description Total non-voided expenses recorded in the period.
+             * @example 30000.00
+             */
+            expenses: string;
+            /**
+             * Format: date
+             * @description First date included in the report (inclusive).
+             */
+            from: string;
+            /**
+             * Format: decimal
+             * @description Total active payments recorded in the period.
+             * @example 125000.00
+             */
+            income: string;
+            /**
+             * Format: decimal
+             * @description Net result: `income - expenses`.
+             * @example 95000.00
+             */
+            net: string;
+            /**
+             * @description Income grouped by service and payment method. Payments linked to sessions
+             *     across multiple services are apportioned by each session's recorded
+             *     charge; gym payments use their directly associated service. Payments with
+             *     no session or direct service association are grouped as `Sin servicio`.
+             */
+            services: components["schemas"]["ServiceIncome"][];
+            /**
+             * Format: date
+             * @description Last date included in the report (inclusive).
+             */
+            to: string;
+            /**
+             * Format: decimal
+             * @description Portion of `income` paid by transfer.
+             * @example 80000.00
+             */
+            transfer: string;
+        };
         ActiveTreatment: {
+            /** @description Images attached to this treatment. */
             images: components["schemas"]["ImageResponse"][];
+            /** @description Notes attached to this treatment. */
             notes: components["schemas"]["NoteResponse"][];
+            /** @description Sessions belonging to this treatment. */
             sessions: components["schemas"]["SessionResponse"][];
+            /** @description Treatment and its current status. */
             treatment: components["schemas"]["Treatment"];
         };
         /**
@@ -1574,28 +1832,44 @@ export interface components {
          */
         BillingType: "per_session" | "monthly";
         ChangePasswordRequest: {
+            /** @description Current account password, used to verify the user's identity. */
             current_password: string;
+            /** @description New password to set for the account. */
             new_password: string;
         };
         ClinicHistoryResponse: {
+            /** @description Active treatments with their sessions, notes, and images, when available. */
             active_treatments?: components["schemas"]["ActiveTreatment"][] | null;
+            /** @description All treatments recorded for the patient. */
             all_treatments: components["schemas"]["Treatment"][];
+            /** @description Patient whose clinic history is being returned. */
             patient: components["schemas"]["PatientResponse"];
         };
         ClinicStats: {
+            /** @description Public clinic identifier. */
             id: string;
+            /** @description Clinic name. */
             name: string;
-            /** Format: int64 */
+            /**
+             * Format: int64
+             * @description Number of users who belong to the clinic.
+             */
             number_of_members: number;
         };
         CreateClinicRequest: {
+            /** @description Name of the new clinic. */
             name: string;
+            /** @description Email used by the new owner to sign in. */
             owner_email: string;
+            /** @description Full name of the clinic owner account to create. */
             owner_name: string;
+            /** @description Initial password for the owner account. */
             owner_password: string;
         };
         CreateClinicResponse: {
+            /** @description Public ID assigned to the newly created clinic. */
             clinic_id: string;
+            /** @description Public ID assigned to the clinic owner account. */
             owner_id: string;
         };
         CreateForTreatmentRequest: components["schemas"]["CreateRequest"] & {
@@ -1608,9 +1882,13 @@ export interface components {
             cost?: string | null;
         };
         CreateGroupRequest: {
+            /** @description Public ID of the clinic service assigned to the group. */
             clinic_service_id: string;
+            /** @description Optional notes about the group. */
             description?: string | null;
+            /** @description Name displayed for the group. */
             name: string;
+            /** @description Weekly schedules to create with the group. Defaults to an empty list. */
             schedules?: components["schemas"]["ScheduleInput"][];
         };
         CreateGroupSubscriptionRequest: {
@@ -1624,8 +1902,11 @@ export interface components {
              * @description Defaults to thirty days after `start_date`.
              */
             end_date?: string | null;
+            /** @description Public ID of the group being joined. */
             group_id: string;
+            /** @description Public ID of the patient enrolling in the group. */
             patient_id: string;
+            /** @description Optional public ID of an existing payment covering the subscription. */
             payment_id?: string | null;
             /**
              * Format: decimal
@@ -1639,11 +1920,16 @@ export interface components {
             start_date?: string | null;
         };
         CreateNoteRequest: {
+            /** @description Text content of the note. */
             content: string;
         };
         CreateObraSocialRequest: {
+            /** @description Name of the health insurance provider. */
             name: string;
-            /** Format: decimal */
+            /**
+             * Format: decimal
+             * @description Surcharge applied to services covered by this provider.
+             */
             surcharge: string;
         };
         CreatePackageRequest: {
@@ -1665,20 +1951,39 @@ export interface components {
             transfer_price?: string | null;
         };
         CreatePatientRequest: {
+            /** @description Patient's address. */
             address?: string | null;
             birth_date?: components["schemas"]["Date"] | null;
+            /** @description National identity number. Optional when creating a patient. */
             dni?: string | null;
-            /** Format: int64 */
+            /**
+             * Format: int64
+             * @description Numeric ID of the patient's health insurance provider. Supply this
+             *     together with `num_afiliado`.
+             */
             id_obra_social?: number | null;
+            /** @description Motive for the initial treatment, when one is created. */
             motive?: string | null;
+            /** @description Patient's full name. */
             name: string;
-            /** Format: int64 */
+            /**
+             * Format: int64
+             * @description Insurance member number. Supply this together with `id_obra_social`.
+             */
             num_afiliado?: number | null;
-            /** Format: int32 */
+            /**
+             * Format: int32
+             * @description Number of sessions for the initial treatment.
+             */
             num_sessions?: number | null;
+            /** @description Patient's occupation. */
             occupation?: string | null;
+            /** @description Contact phone number. */
             phone?: string | null;
-            /** @description Without a service no treatment is created. */
+            /**
+             * @description Public ID of the service for the initial treatment. Without a service,
+             *     no treatment is created.
+             */
             service_id?: string | null;
         };
         CreatePaymentRequest: {
@@ -1736,7 +2041,9 @@ export interface components {
              *     service is created.
              */
             billing_type?: components["schemas"]["BillingType"];
+            /** @description Optional longer description of the service. */
             description?: string | null;
+            /** @description Name of the service offered by the clinic. */
             name: string;
             /**
              * Format: decimal
@@ -1757,19 +2064,30 @@ export interface components {
              *     `cost` wins. Only owners and receptionists can set it.
              */
             cost?: string | null;
+            /** @description Public ID of the patient receiving the session. */
             patient_id: string;
             /** @description A clinic service charged per session. Monthly services are rejected. */
             service_id?: string | null;
+            /** @description Public ID of the treatment this session belongs to. */
             treatment_id: string;
         };
         CreateTreatmentRequest: {
+            /** @description Optional background information relevant to the treatment. */
             background?: string | null;
+            /** @description Optional clinical diagnostic. */
             diagnostic?: string | null;
+            /** @description Optional clinical evaluation. */
             evaluation?: string | null;
+            /** @description Reason the patient is receiving treatment. */
             motive: string;
-            /** Format: int64 */
+            /**
+             * Format: int64
+             * @description Planned number of sessions.
+             */
             num_sessions: number;
+            /** @description Public ID of the patient receiving treatment. */
             patient_id: string;
+            /** @description Public ID of the clinic service used for the treatment. */
             service_id: string;
         };
         CreateUserRequest: components["schemas"]["RoleData"] & {
@@ -1778,7 +2096,9 @@ export interface components {
             password: string;
         };
         Credentials: {
+            /** @description Email address used to sign in. */
             email: string;
+            /** @description Account password. */
             password: string;
         };
         /**
@@ -1788,28 +2108,81 @@ export interface components {
          */
         Date: string;
         DeletePaymentRequest: {
+            /** @description Explanation recorded for deleting the payment. */
             reason: string;
         };
         /** @enum {string} */
         ErrorCode: "DuplicateUser" | "DuplicatePatientDni" | "DuplicateRequest" | "InvalidId" | "ExpiredSession" | "MissingRow" | "InvalidCredentials" | "ValidationFailed" | "PayloadTooLarge" | "ClinicAlreadyExists" | "ObraSocialAlreadyExists" | "InvalidJson" | "TimeSlotConflict" | "DeleteRestricted" | "ServiceUnavailable" | "DatabaseError" | "InternalError" | "Opaque";
         ErrorResponse: {
+            /** @description Stable machine-readable code identifying the error category. */
             code: components["schemas"]["ErrorCode"];
+            /** @description Optional additional guidance for resolving the error. */
             hint?: string | null;
+            /** @description Human-readable explanation of the error. */
             message: string;
         };
+        Expense: {
+            /**
+             * Format: decimal
+             * @description Positive expense amount.
+             * @example 1250.50
+             */
+            amount: string;
+            /** @description Optional user-defined category. */
+            category?: string | null;
+            /**
+             * Format: date
+             * @description Date used to include the expense in accounting periods.
+             */
+            date: string;
+            /** @description Short explanation of the expense. */
+            description: string;
+            /** @description Public identifier of the expense. */
+            id: string;
+        };
+        ExpenseRequest: {
+            /**
+             * Format: decimal
+             * @description Positive amount of the expense.
+             * @example 1250.50
+             */
+            amount: string;
+            /**
+             * @description Optional category to help identify the type of expense.
+             * @example Alquiler
+             */
+            category?: string | null;
+            /** @description Date on which the expense was incurred (`YYYY-MM-DD`). */
+            date: components["schemas"]["Date"];
+            /**
+             * @description Brief description of the expense. Must not be blank.
+             * @example Alquiler del consultorio
+             */
+            description: string;
+        };
         ForgotPasswordRequest: {
+            /** @description Email address for the account requesting a password reset. */
             email: string;
         };
         GroupResponse: {
+            /** @description Public ID of the clinic that owns the group. */
             clinic_id: string;
+            /** @description Public ID of the service associated with the group, if any. */
             clinic_service_id?: string | null;
+            /** @description Optional description of the group. */
             description?: string | null;
+            /** @description Public ID of the group. */
             id: string;
+            /** @description Name of the group. */
             name: string;
+            /** @description Weekly meeting times for the group. */
             schedules: components["schemas"]["GroupScheduleResponse"][];
         };
         GroupScheduleResponse: {
-            /** Format: int32 */
+            /**
+             * Format: int32
+             * @description Day of the week, where Monday is 1 and Sunday is 7.
+             */
             day_of_week: number;
             /**
              * Format: time
@@ -1817,8 +2190,12 @@ export interface components {
              * @example 10:00:00
              */
             end_time: string;
+            /** @description Public ID of the group this schedule belongs to. */
             group_id: string;
-            /** Format: int64 */
+            /**
+             * Format: int64
+             * @description Database ID of this schedule entry.
+             */
             id: number;
             /**
              * Format: time
@@ -1834,23 +2211,43 @@ export interface components {
              *     taken into account.
              */
             auto_renew: boolean;
+            /** @description Public ID of the clinic that owns the subscription. */
             clinic_id: string;
-            /** Format: date */
+            /**
+             * Format: date
+             * @description Last day covered by the subscription.
+             */
             end_date: string;
+            /** @description Public ID of the group. */
             group_id: string;
+            /** @description Public ID of the subscription. */
             id: string;
+            /** @description Public ID of the subscribed patient. */
             patient_id: string;
+            /** @description Public ID of the payment associated with the subscription, if paid. */
             payment_id?: string | null;
-            /** Format: decimal */
+            /**
+             * Format: decimal
+             * @description Subscription price for this period.
+             */
             price: string;
-            /** Format: date */
+            /**
+             * Format: date
+             * @description First day covered by the subscription.
+             */
             start_date: string;
         };
         /** @description An image attached to a treatment, ready to be served to the browser. */
         ImageResponse: {
-            /** @example image/webp */
+            /**
+             * @description Media type of the image file.
+             * @example image/webp
+             */
             content_type: string;
-            /** Format: date-time */
+            /**
+             * Format: date-time
+             * @description Time when the image was uploaded.
+             */
             created_at: string;
             /** @description Name of the user that uploaded the image. */
             created_by: string;
@@ -1864,11 +2261,17 @@ export interface components {
              * @example V1StGXR8_Z.webp
              */
             filename: string;
-            /** @example V1StGXR8_Z */
+            /**
+             * @description Public ID of the image.
+             * @example V1StGXR8_Z
+             */
             id: string;
             /** @description User supplied name for the attachment. */
             name: string;
-            /** Format: int64 */
+            /**
+             * Format: int64
+             * @description Size of the image file in bytes.
+             */
             size_bytes: number;
             /**
              * @description Public URL of the image.
@@ -1884,19 +2287,30 @@ export interface components {
             file: string;
         };
         LoginResponse: {
+            /** @description Name of the clinic the user belongs to. */
             clinic_name: string;
+            /** @description Public ID of the authenticated user. */
             id: components["schemas"]["UserId"];
         };
         NoteResponse: {
+            /** @description Text content of the note. */
             content: string;
+            /** @description Name of the user who created the note. */
             creator_name: string;
+            /** @description Public ID of the note. */
             id: string;
+            /** @description Public ID of the treatment this note belongs to. */
             treatment_id: string;
         };
         ObraSocialResponse: {
-            /** Format: int64 */
+            /**
+             * Format: int64
+             * @description Numeric ID of the health insurance provider.
+             */
             id: number;
+            /** @description Provider name. */
             name: string;
+            /** @description Additional amount charged per session for this provider. */
             surcharge: string;
         };
         /**
@@ -1906,56 +2320,97 @@ export interface components {
          *     [`Appointment`]'s JSON, so the field names are the wire keys.
          */
         PatientData: {
+            /** @description Patient's national identity document number, if recorded. */
             patient_dni?: string | null;
+            /** @description Public ID of the patient associated with the appointment. */
             patient_id: components["schemas"]["PatientId"];
+            /** @description Patient's full name. */
             patient_name: string;
         };
         PatientId: string;
         PatientResponse: {
+            /** @description Home address, if recorded. */
             address?: string | null;
-            /** Format: int32 */
+            /**
+             * Format: int32
+             * @description Patient's age when available.
+             */
             age?: number | null;
-            birth_date?: components["schemas"]["Date"] | null;
+            /**
+             * Format: date
+             * @description Patient's date of birth, if recorded.
+             */
+            birth_date?: string | null;
+            /** @description National identity document number, if recorded. */
             dni?: string | null;
+            /** @description Public ID of the patient. */
             id: string;
-            /** Format: int64 */
+            /**
+             * Format: int64
+             * @description Numeric ID of the patient's health insurance provider, if any.
+             */
             id_obra_social?: number | null;
+            /** @description Patient's full name. */
             name: string;
+            /** @description Name of the patient's health insurance provider, if any. */
             nombre_obra_social?: string | null;
-            /** Format: int64 */
+            /**
+             * Format: int64
+             * @description Health insurance member number, if recorded.
+             */
             num_afiliado?: number | null;
+            /** @description Occupation, if recorded. */
             occupation?: string | null;
+            /** @description Contact phone number, if recorded. */
             phone?: string | null;
+            /** @description Current treatment status. */
             status: components["schemas"]["PatientStatus"];
         };
         /** @enum {string} */
         PatientStatus: "in_treatment" | "rehabilitated";
         PaymentDetail: {
+            /** @description Transfer information, including the external payment ID when available. */
             transfer: {
+                /** @description Identifier provided by the external payment provider. */
                 mp_payment_id: string;
             };
         } | {
+            /** @description Cash payment, which has no method-specific fields. */
             cash: Record<string, never>;
         };
         /** @enum {string} */
         PaymentMethod: "transfer" | "cash";
         PaymentResponse: {
-            /** @example 1250.50 */
+            /**
+             * @description Payment amount.
+             * @example 1250.50
+             */
             amount: string;
-            /** Format: date */
+            /**
+             * Format: date
+             * @description Date and time when the payment record was created.
+             */
             created_at: string;
+            /** @description Public ID of the user who recorded the payment. */
             created_by: string;
-            /** Format: date */
+            /**
+             * Format: date
+             * @description Date the payment was made.
+             */
             date: string;
             detail?: components["schemas"]["PaymentDetail"] | null;
+            /** @description Public ID of the payment. */
             id: string;
+            /** @description Public ID of the patient who made the payment. */
             payer_id: string;
+            /** @description Payment method used for this payment. */
             payment_method: components["schemas"]["PaymentMethod"];
             /** @description Sessions of the payer covered by this payment. */
             session_ids: string[];
         };
         /** @description What a group of sessions costs when paid together. */
         Quote: {
+            /** @description Per-session prices included in this quote. */
             sessions: components["schemas"]["QuotedSession"][];
             /**
              * Format: decimal
@@ -1971,6 +2426,7 @@ export interface components {
         };
         /** @description What one session costs in a [`Quote`]. */
         QuotedSession: {
+            /** @description Public ID of the session being priced. */
             id: string;
             /** @description Package whose price applies, if any. */
             package_id?: string | null;
@@ -1996,7 +2452,10 @@ export interface components {
             role: "med_staff";
         });
         ScheduleInput: {
-            /** Format: int32 */
+            /**
+             * Format: int32
+             * @description Day of the week, where Monday is 1 and Sunday is 7.
+             */
             day_of_week: number;
             /**
              * Format: time
@@ -2011,7 +2470,26 @@ export interface components {
              */
             start_time: string;
         };
+        ServiceIncome: {
+            /**
+             * Format: decimal
+             * @description Cash income attributed to this service for the requested period.
+             * @example 20000.00
+             */
+            cash: string;
+            /** @description Public service identifier. `null` represents income without a service. */
+            service_id?: string | null;
+            /** @description Service name, or `Sin servicio` when no service is associated. */
+            service_name: string;
+            /**
+             * Format: decimal
+             * @description Transfer income attributed to this service for the requested period.
+             * @example 50000.00
+             */
+            transfer: string;
+        };
         ServicePackageResponse: {
+            /** @description Public ID of the package. */
             id: string;
             /**
              * Format: int32
@@ -2023,6 +2501,7 @@ export interface components {
              * @description Cash price of each session.
              */
             price: string;
+            /** @description Public ID of the service covered by the package. */
             service_id: string;
             /**
              * Format: decimal
@@ -2031,10 +2510,15 @@ export interface components {
             transfer_price?: string | null;
         };
         ServiceResponse: {
+            /** @description Rule used to charge the service: per session or monthly. */
             billing_type: components["schemas"]["BillingType"];
+            /** @description Public ID of the clinic that owns the service. */
             clinic_id: string;
+            /** @description Optional description of the service. */
             description?: string | null;
+            /** @description Public ID of the service. */
             id: string;
+            /** @description Name of the service. */
             name: string;
             /**
              * Format: decimal
@@ -2052,7 +2536,9 @@ export interface components {
             appointment?: components["schemas"]["Appointment"] | null;
             /** @description Amount owed when paid in cash. */
             debt: string;
+            /** @description Clinical notes recorded for this session, if any. */
             evolution?: string | null;
+            /** @description Public ID of the session. */
             id: string;
             /**
              * Format: int32
@@ -2074,6 +2560,7 @@ export interface components {
              *     service. Packages never change a manual price.
              */
             price_overridden?: boolean;
+            /** @description Current completion state of the session. */
             status: components["schemas"]["SessionStatus"];
             /** @description Amount owed when paid by transfer. `null` means the same as `debt`. */
             transfer_debt?: string | null;
@@ -2088,21 +2575,35 @@ export interface components {
          *     It serializes directly to JSON and is the HTTP response body for the staff endpoints.
          */
         Staff: {
+            /** @description Home address. */
             address: string;
+            /** @description National identity document number. */
             dni: string;
+            /** @description Email address used by the staff account. */
             email: string;
+            /** @description Staff member's full name. */
             name: string;
+            /** @description Contact phone number. */
             phone: string;
+            /** @description Role that determines which clinic operations the staff member can use. */
             role: components["schemas"]["UserRole"];
+            /** @description Staff member's salary. */
             salary: string;
+            /** @description Public ID of the staff member. */
             staff_id: components["schemas"]["StaffId"];
         };
         StaffId: string;
         StaffInfo: {
+            /** @description Home address. */
             address: string;
+            /** @description National identity document number of the staff member. */
             dni: string;
+            /** @description Contact phone number. */
             phone: string;
-            /** Format: decimal */
+            /**
+             * Format: decimal
+             * @description Staff member's salary.
+             */
             salario: string;
         };
         /** @enum {string} */
@@ -2114,18 +2615,34 @@ export interface components {
          *     treatment endpoints.
          */
         Treatment: {
+            /** @description Relevant medical background, if recorded. */
             background?: string | null;
-            /** Format: date */
+            /**
+             * Format: date
+             * @description Date the treatment was created.
+             */
             created_at: string;
+            /** @description Clinical diagnosis, if recorded. */
             diagnostic?: string | null;
+            /** @description Clinical evaluation, if recorded. */
             evaluation?: string | null;
-            /** Format: date */
+            /**
+             * Format: date
+             * @description Date the treatment was marked finished, if applicable.
+             */
             finished?: string | null;
+            /** @description Public ID of the treatment. */
             id: string;
+            /** @description Reason the patient is receiving treatment. */
             motive: string;
-            /** Format: int64 */
+            /**
+             * Format: int64
+             * @description Number of sessions planned for the treatment.
+             */
             num_sessions: number;
+            /** @description Public ID of the service assigned to the treatment. */
             service_id: string;
+            /** @description Whether the treatment is active or finished. */
             status: components["schemas"]["TreatmentStatus"];
         };
         /** @enum {string} */
@@ -2151,9 +2668,16 @@ export interface components {
             };
         };
         UpdateGroupRequest: {
+            /**
+             * @description New clinic service ID. Omit to keep the current service; send `null` to
+             *     remove the assignment.
+             */
             clinic_service_id?: string | null;
+            /** @description New description. Omit to keep it; send `null` to clear it. */
             description?: string | null;
+            /** @description New group name. Omit to keep the current name. */
             name?: string | null;
+            /** @description Replacement schedule list. Omit to keep the current schedules. */
             schedules?: components["schemas"]["ScheduleInput"][] | null;
         };
         UpdateGroupSubscriptionRequest: {
@@ -2162,15 +2686,26 @@ export interface components {
              *     periods, or `true` to resume them.
              */
             auto_renew?: boolean | null;
-            /** Format: date */
+            /**
+             * Format: date
+             * @description New subscription end date. Omit to keep the current date.
+             */
             end_date?: string | null;
+            /** @description New group public ID. Omit to keep the current group. */
             group_id?: string | null;
+            /** @description New patient public ID. Omit to keep the current patient. */
             patient_id?: string | null;
             /** @description Omit to keep the current payment, or send `null` to clear it. */
             payment_id?: string | null;
-            /** Format: decimal */
+            /**
+             * Format: decimal
+             * @description New subscription price. Omit to keep the current price.
+             */
             price?: string | null;
-            /** Format: date */
+            /**
+             * Format: date
+             * @description New subscription start date. Omit to keep the current date.
+             */
             start_date?: string | null;
         };
         UpdateImageRequest: {
@@ -2182,16 +2717,26 @@ export interface components {
             description?: string | null;
         };
         UpdateNoteRequest: {
+            /** @description Replacement text content of the note. */
             content: string;
         };
         UpdateObraSocialRequest: {
-            /** Format: decimal */
+            /**
+             * Format: decimal
+             * @description Replacement surcharge for the provider's covered services.
+             */
             surcharge: string;
         };
         UpdatePackageRequest: {
-            /** Format: int32 */
+            /**
+             * Format: int32
+             * @description New minimum number of sessions required for the package.
+             */
             min_sessions?: number | null;
-            /** Format: decimal */
+            /**
+             * Format: decimal
+             * @description New cash price per session.
+             */
             price?: string | null;
             /**
              * Format: decimal
@@ -2200,15 +2745,27 @@ export interface components {
             transfer_price?: string | null;
         };
         UpdatePatientRequest: {
+            /** @description New address. */
             address?: string | null;
             birth_date?: components["schemas"]["Date"] | null;
+            /** @description New national identity number. */
             dni?: string | null;
-            /** Format: int64 */
+            /**
+             * Format: int64
+             * @description Insurance provider ID. Omit to keep the current value; send `null` to
+             *     clear it. A member number must be supplied when setting a provider.
+             */
             id_obra_social?: number | null;
+            /** @description New patient name. */
             name?: string | null;
-            /** Format: int64 */
+            /**
+             * Format: int64
+             * @description Insurance member number. Omit to keep it; send `null` to clear it.
+             */
             num_afiliado?: number | null;
+            /** @description New occupation. */
             occupation?: string | null;
+            /** @description New contact phone number. */
             phone?: string | null;
             status?: components["schemas"]["PatientStatus"] | null;
         };
@@ -2217,7 +2774,9 @@ export interface components {
         };
         UpdateScheduleRequest: components["schemas"]["ScheduleInput"];
         UpdateServiceRequest: {
+            /** @description New service description. */
             description?: string | null;
+            /** @description New service name. */
             name?: string | null;
             /**
              * Format: decimal
@@ -2250,35 +2809,59 @@ export interface components {
             transfer_debt?: string | null;
         };
         UpdateSessionRequest: {
+            /** @description Updated clinical evolution or session notes. */
             evolution?: string | null;
+            /** @description Updated session status. */
             status: components["schemas"]["SessionStatus"];
         };
         UpdateStaffRequest: {
+            /** @description New home address. */
             address?: string | null;
+            /** @description New national identity document number. */
             dni?: string | null;
+            /** @description New email address for the account. */
             email?: string | null;
+            /** @description New staff member name. */
             name?: string | null;
+            /** @description New account password. */
             password?: string | null;
+            /** @description New contact phone number. */
             phone?: string | null;
             role?: components["schemas"]["UserRole"] | null;
-            /** Format: decimal */
+            /**
+             * Format: decimal
+             * @description New staff salary.
+             */
             salary?: string | null;
         };
         UpdateTreatmentRequest: {
+            /** @description New background information. */
             background?: string | null;
-            /** Format: date */
+            /**
+             * Format: date
+             * @description New treatment start date.
+             */
             created_at?: string | null;
+            /** @description New clinical diagnostic. */
             diagnostic?: string | null;
+            /** @description New clinical evaluation. */
             evaluation?: string | null;
-            /** Format: date */
+            /**
+             * Format: date
+             * @description Date the treatment was completed.
+             */
             finished?: string | null;
+            /** @description New reason for treatment. */
             motive?: string | null;
             status?: components["schemas"]["TreatmentStatus"] | null;
         };
         /** @description The settings fields that may be changed by the logged-in user. */
         UpdateUserSettings: {
+            /** @description Replacement user-specific preferences; omitted to keep the current value. */
             extra?: unknown;
+            /** @description New preferred locale; omitted to keep the current value. */
             locale?: string | null;
+            /** @description New interface theme; omitted to keep the current value. */
             theme?: string | null;
         };
         UploadedImageResponse: {
@@ -2301,8 +2884,11 @@ export interface components {
          *     It serializes directly to JSON and is the HTTP response body for the user endpoints.
          */
         User: {
+            /** @description Account email address. */
             email: string;
+            /** @description Role that controls the account's permissions. */
             role: components["schemas"]["UserRole"];
+            /** @description Username shown for the account. */
             username: string;
         };
         UserId: string;
@@ -2313,11 +2899,24 @@ export interface components {
         UserRole: "admin" | "owner" | "receptionist" | "med_staff";
         /** @description The preferences associated with an application user. */
         UserSettings: {
+            /** @description Additional user-specific preferences. */
             extra: unknown;
+            /** @description Preferred language and regional format, such as `es-AR`. */
             locale: string;
+            /** @description Preferred interface color theme. */
             theme: string;
-            /** Format: date-time */
+            /**
+             * Format: date-time
+             * @description Time when these settings were last changed.
+             */
             updated_at: string;
+        };
+        VoidExpenseRequest: {
+            /**
+             * @description Reason for voiding the expense. Voided expenses are excluded from totals.
+             * @example Carga duplicada
+             */
+            reason: string;
         };
     };
     responses: never;
@@ -2328,6 +2927,442 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+    list_accounting_expenses: {
+        parameters: {
+            query: {
+                /**
+                 * @description First date in the requested period, inclusive (`YYYY-MM-DD`).
+                 * @example 2026-01-01
+                 */
+                from: components["schemas"]["Date"];
+                /**
+                 * @description Last date in the requested period, inclusive (`YYYY-MM-DD`).
+                 * @example 2026-03-31
+                 */
+                to: components["schemas"]["Date"];
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Matching active expenses, or an empty array. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Expense"][];
+                };
+            };
+            /** @description El cuerpo de la solicitud tiene un formato incorrecto */
+            400: {
+                headers: {
+                    "x-request-id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description La sesión ha expirado o no es válida */
+            401: {
+                headers: {
+                    "x-request-id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description No tiene permiso para realizar esta acción */
+            403: {
+                headers: {
+                    "x-request-id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Error interno */
+            500: {
+                headers: {
+                    "x-request-id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    create_accounting_expense: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ExpenseRequest"];
+            };
+        };
+        responses: {
+            /** @description Expense created. */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Expense"];
+                };
+            };
+            /** @description El cuerpo de la solicitud tiene un formato incorrecto */
+            400: {
+                headers: {
+                    "x-request-id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description La sesión ha expirado o no es válida */
+            401: {
+                headers: {
+                    "x-request-id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description No tiene permiso para realizar esta acción */
+            403: {
+                headers: {
+                    "x-request-id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Clinic or creator was not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Error interno */
+            500: {
+                headers: {
+                    "x-request-id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    void_accounting_expense: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Public expense ID (10 characters). */
+                expense_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["VoidExpenseRequest"];
+            };
+        };
+        responses: {
+            /** @description Expense voided. */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description El ID proporcionado no es válido */
+            400: {
+                headers: {
+                    "x-request-id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description La sesión ha expirado o no es válida */
+            401: {
+                headers: {
+                    "x-request-id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description No tiene permiso para realizar esta acción */
+            403: {
+                headers: {
+                    "x-request-id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Active expense was not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Error interno */
+            500: {
+                headers: {
+                    "x-request-id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    update_accounting_expense: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Public expense ID (10 characters). */
+                expense_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ExpenseRequest"];
+            };
+        };
+        responses: {
+            /** @description Expense updated. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Expense"];
+                };
+            };
+            /** @description El cuerpo de la solicitud tiene un formato incorrecto o el ID no es válido */
+            400: {
+                headers: {
+                    "x-request-id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description La sesión ha expirado o no es válida */
+            401: {
+                headers: {
+                    "x-request-id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description No tiene permiso para realizar esta acción */
+            403: {
+                headers: {
+                    "x-request-id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Active expense was not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Error interno */
+            500: {
+                headers: {
+                    "x-request-id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    list_accounting_payments: {
+        parameters: {
+            query: {
+                /**
+                 * @description First date in the requested period, inclusive (`YYYY-MM-DD`).
+                 * @example 2026-01-01
+                 */
+                from: components["schemas"]["Date"];
+                /**
+                 * @description Last date in the requested period, inclusive (`YYYY-MM-DD`).
+                 * @example 2026-03-31
+                 */
+                to: components["schemas"]["Date"];
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Matching active payments with related payer, creator, session, and service data, or an empty array. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AccountingPayment"][];
+                };
+            };
+            /** @description El cuerpo de la solicitud tiene un formato incorrecto */
+            400: {
+                headers: {
+                    "x-request-id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description La sesión ha expirado o no es válida */
+            401: {
+                headers: {
+                    "x-request-id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description No tiene permiso para realizar esta acción */
+            403: {
+                headers: {
+                    "x-request-id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Error interno */
+            500: {
+                headers: {
+                    "x-request-id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    get_accounting_summary: {
+        parameters: {
+            query: {
+                /**
+                 * @description First date in the requested period, inclusive (`YYYY-MM-DD`).
+                 * @example 2026-01-01
+                 */
+                from: components["schemas"]["Date"];
+                /**
+                 * @description Last date in the requested period, inclusive (`YYYY-MM-DD`).
+                 * @example 2026-03-31
+                 */
+                to: components["schemas"]["Date"];
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Income, expense, and net totals with income breakdowns for the requested period. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AccountingSummary"];
+                };
+            };
+            /** @description El cuerpo de la solicitud tiene un formato incorrecto */
+            400: {
+                headers: {
+                    "x-request-id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description La sesión ha expirado o no es válida */
+            401: {
+                headers: {
+                    "x-request-id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description No tiene permiso para realizar esta acción */
+            403: {
+                headers: {
+                    "x-request-id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Error interno */
+            500: {
+                headers: {
+                    "x-request-id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
     get_all_appointments_in_time_range: {
         parameters: {
             query: {
@@ -2867,6 +3902,16 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
+            /** @description Settings for the authenticated user were not found. */
+            404: {
+                headers: {
+                    "x-request-id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
             /** @description Error interno */
             500: {
                 headers: {
@@ -2953,6 +3998,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
+            /** @description Clinics and member counts available to the administrator. */
             200: {
                 headers: {
                     "x-request-id"?: string;
@@ -2960,6 +4006,36 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ClinicStats"][];
+                };
+            };
+            /** @description La sesión ha expirado o no es válida */
+            401: {
+                headers: {
+                    "x-request-id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description No tiene permiso para realizar esta acción */
+            403: {
+                headers: {
+                    "x-request-id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Error interno */
+            500: {
+                headers: {
+                    "x-request-id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
         };
@@ -2977,6 +4053,7 @@ export interface operations {
             };
         };
         responses: {
+            /** @description Clinic and owner created. */
             201: {
                 headers: {
                     "x-request-id"?: string;
@@ -3410,6 +4487,16 @@ export interface operations {
                     "application/json": components["schemas"]["ServicePackageResponse"][];
                 };
             };
+            /** @description El ID proporcionado no es válido */
+            400: {
+                headers: {
+                    "x-request-id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
             /** @description La sesión ha expirado o no es válida */
             401: {
                 headers: {
@@ -3542,6 +4629,16 @@ export interface operations {
                 };
                 content?: never;
             };
+            /** @description El ID proporcionado no es válido */
+            400: {
+                headers: {
+                    "x-request-id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
             /** @description La sesión ha expirado o no es válida */
             401: {
                 headers: {
@@ -3652,6 +4749,16 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
+            /** @description No se enviaron campos para actualizar. */
+            422: {
+                headers: {
+                    "x-request-id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
             /** @description Error interno */
             500: {
                 headers: {
@@ -3673,6 +4780,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
+            /** @description Groups in the authenticated staff member's clinic. */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -3726,6 +4834,7 @@ export interface operations {
             };
         };
         responses: {
+            /** @description Group created with its initial schedules. */
             201: {
                 headers: {
                     [name: string]: unknown;
@@ -3787,6 +4896,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
+            /** @description Group and its schedules. */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -3838,6 +4948,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
+            /** @description Group and its schedules deleted. */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -3891,6 +5002,7 @@ export interface operations {
             };
         };
         responses: {
+            /** @description Updated group and schedules. */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -3952,6 +5064,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
+            /** @description Subscriptions belonging to the specified group. */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -4005,6 +5118,7 @@ export interface operations {
             };
         };
         responses: {
+            /** @description Schedule created for the group. */
             201: {
                 headers: {
                     [name: string]: unknown;
@@ -4066,6 +5180,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
+            /** @description Schedule found. */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -4117,6 +5232,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
+            /** @description Schedule deleted. */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -4170,6 +5286,7 @@ export interface operations {
             };
         };
         responses: {
+            /** @description Schedule updated. */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -4233,6 +5350,7 @@ export interface operations {
             };
         };
         responses: {
+            /** @description Subscription created with the supplied or default period and price. */
             201: {
                 headers: {
                     [name: string]: unknown;
@@ -4294,6 +5412,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
+            /** @description Subscription found. */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -4345,6 +5464,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
+            /** @description Subscription deleted. */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -4398,6 +5518,7 @@ export interface operations {
             };
         };
         responses: {
+            /** @description Updated subscription. */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -4445,6 +5566,25 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
+            };
+        };
+    };
+    check_health: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The server is ready to receive requests! */
+            200: {
+                headers: {
+                    "x-request-id"?: string;
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
         };
     };
@@ -5354,6 +6494,16 @@ export interface operations {
             };
             /** @description Ya existe un paciente con ese DNI en esta clínica */
             409: {
+                headers: {
+                    "x-request-id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Falta un campo requerido. */
+            422: {
                 headers: {
                     "x-request-id"?: string;
                     [name: string]: unknown;
@@ -6688,6 +7838,16 @@ export interface operations {
             };
             /** @description No se encontró la sesión */
             404: {
+                headers: {
+                    "x-request-id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description At least one price field must be supplied. */
+            422: {
                 headers: {
                     "x-request-id"?: string;
                     [name: string]: unknown;
